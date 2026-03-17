@@ -182,111 +182,202 @@
   .cards-reveal {
     display: flex;
     flex-wrap: wrap;
-    gap: 14px;
+    gap: 20px;
     justify-content: center;
     padding: 8px 0 16px;
   }
 
+  /* Outer frame — colored border per rarity */
   .card {
-    width: 148px;
-    min-height: 210px;
-    border-radius: 14px;
-    border: 1.5px solid var(--border);
-    background: var(--surface);
-    padding: 10px 10px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+    width: 200px;
+    border-radius: 12px;
+    padding: 5px;
     cursor: pointer;
-    transition: transform 0.15s, box-shadow 0.15s;
     position: relative;
-    overflow: hidden;
-    animation: cardReveal 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+    transition: transform 0.18s, filter 0.18s;
+    animation: cardReveal 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+    text-decoration: none;
+    display: block;
   }
 
-  .card:hover { transform: translateY(-5px) scale(1.02); }
+  .card:hover { transform: translateY(-6px) scale(1.03); filter: brightness(1.08); }
 
   @keyframes cardReveal {
-    from { opacity: 0; transform: perspective(400px) rotateY(90deg) scale(0.8); }
-    to   { opacity: 1; transform: perspective(400px) rotateY(0deg) scale(1); }
+    from { opacity: 0; transform: perspective(600px) rotateY(80deg) scale(0.85); }
+    to   { opacity: 1; transform: perspective(600px) rotateY(0deg)  scale(1); }
   }
 
-  .card.rarity-C { }
-  .card.rarity-R  { border-color: rgba(200,122,58,0.6); box-shadow: 0 0 10px rgba(200,122,58,0.15); }
-  .card.rarity-SR { border-color: rgba(58,123,200,0.7); box-shadow: 0 0 12px rgba(58,123,200,0.2); }
-  .card.rarity-SSR {
-    border-color: rgba(123,58,200,0.8);
-    box-shadow: 0 0 18px rgba(123,58,200,0.3);
-    background: linear-gradient(160deg, #1a1030 0%, var(--surface) 50%);
+  /* Rarity border colors */
+  .card.rarity-C   { background: linear-gradient(160deg, #4a4a4a, #2a2a2a); box-shadow: 0 4px 16px rgba(0,0,0,0.5); }
+  .card.rarity-R   { background: linear-gradient(160deg, #c87a3a, #7a4010); box-shadow: 0 4px 20px rgba(200,122,58,0.4); }
+  .card.rarity-SR  { background: linear-gradient(160deg, #5a9ae0, #1a4a8a); box-shadow: 0 4px 24px rgba(58,123,200,0.5); }
+  .card.rarity-SSR { background: linear-gradient(160deg, #a060e0, #501890); box-shadow: 0 6px 28px rgba(123,58,200,0.55); }
+  .card.rarity-UR  {
+    background: linear-gradient(160deg, #f0c84a, #c9a227, #8a6810);
+    box-shadow: 0 6px 32px rgba(201,162,39,0.6);
   }
-  .card.rarity-UR {
-    border-color: var(--gold);
-    box-shadow: 0 0 24px rgba(201,162,39,0.4);
-    background: linear-gradient(160deg, #1f1500 0%, var(--surface) 40%);
+  .card.rarity-UR::before {
+    content: '★';
+    position: absolute;
+    top: -8px; right: -6px;
+    font-size: 22px;
+    color: var(--gold-lt);
+    filter: drop-shadow(0 0 6px rgba(240,200,74,0.8));
+    z-index: 2;
+  }
+
+  /* Inner card body */
+  .card-inner {
+    background: #111008;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Rarity + title bar */
+  .card-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 8px 5px;
+    background: rgba(0,0,0,0.6);
   }
 
   .rarity-badge {
-    position: absolute;
-    top: 8px;
-    right: 8px;
-    font-size: 9px;
+    font-size: 11px;
     font-weight: 700;
-    letter-spacing: 1px;
-    padding: 2px 6px;
+    letter-spacing: 0.5px;
+    padding: 1px 6px;
     border-radius: 4px;
+    flex-shrink: 0;
   }
 
-  .rarity-C  .rarity-badge { background: rgba(255,255,255,0.08); color: var(--muted); }
-  .rarity-R  .rarity-badge { background: var(--bronze); color: #fff; }
-  .rarity-SR .rarity-badge { background: var(--blue); color: #fff; }
+  .rarity-C   .rarity-badge { background: #555; color: #ccc; }
+  .rarity-R   .rarity-badge { background: var(--bronze); color: #fff; }
+  .rarity-SR  .rarity-badge { background: var(--blue); color: #fff; }
   .rarity-SSR .rarity-badge { background: var(--purple); color: #fff; }
-  .rarity-UR .rarity-badge { background: var(--gold); color: #1a1200; }
+  .rarity-UR  .rarity-badge { background: var(--gold); color: #1a1200; }
 
-  .card-thumb {
+  .card-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #f0e8d0;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Image area */
+  .card-image {
     width: 100%;
-    height: 80px;
-    border-radius: 8px;
-    background: var(--surface2);
+    height: 120px;
+    background: #1a1610;
+    position: relative;
+    overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 36px;
-    border: 1px solid var(--border);
-    overflow: hidden;
+    font-size: 48px;
   }
 
-  .card-thumb img {
+  .card-image img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    border-radius: 7px;
+    display: block;
   }
 
-  .card-name {
-    font-size: 12px;
-    font-weight: 700;
-    line-height: 1.25;
-    color: var(--text);
-  }
-
-  .card-type {
+  /* Excerpt */
+  .card-excerpt {
+    padding: 7px 8px;
     font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    line-height: 1.45;
+    color: #b0a890;
+    background: rgba(20,16,8,0.95);
+    min-height: 52px;
+    /* clamp to 3 lines */
+    display: -webkit-box;
+    -webkit-line-clamp: 4;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
   }
 
+  /* Flavour text — italic gold line */
+  .card-flavour {
+    padding: 4px 8px 6px;
+    font-size: 9px;
+    font-style: italic;
+    color: #8a7840;
+    background: rgba(12,10,4,0.95);
+    border-top: 1px solid rgba(255,255,255,0.04);
+    min-height: 28px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* Stats bar */
   .card-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    margin-top: auto;
-    padding-top: 6px;
-    border-top: 1px solid var(--border);
+    background: #0a0804;
+    border-top: 2px solid rgba(255,255,255,0.06);
   }
 
-  .stat { font-size: 10px; color: var(--muted); display: flex; flex-direction: column; }
-  .stat-val { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.1; }
+  .stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 7px 4px;
+  }
+
+  .stat:first-child { border-right: 1px solid rgba(255,255,255,0.06); }
+
+  .stat-label {
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 2px;
+  }
+
+  .rarity-C   .stat-label { color: #888; }
+  .rarity-R   .stat-label { color: #c87a3a; }
+  .rarity-SR  .stat-label { color: #5a9ae0; }
+  .rarity-SSR .stat-label { color: #a060e0; }
+  .rarity-UR  .stat-label { color: var(--gold); }
+
+  .stat-val {
+    font-size: 22px;
+    font-weight: 700;
+    color: #f0e8d0;
+    line-height: 1;
+  }
+
+  /* Type tags at bottom */
+  .card-tags {
+    display: flex;
+    gap: 4px;
+    padding: 5px 8px 7px;
+    background: #0a0804;
+    flex-wrap: wrap;
+  }
+
+  .card-tag {
+    font-size: 9px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 2px 7px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #888;
+    background: rgba(255,255,255,0.04);
+    text-transform: uppercase;
+    cursor: pointer;
+  }
 
   /* ── DECK ── */
   .section-header {
@@ -320,6 +411,8 @@
     flex-direction: column;
     gap: 4px;
     transition: transform 0.1s, border-color 0.1s;
+    text-decoration: none;
+    color: inherit;
   }
 
   .mini-card:hover { transform: scale(1.03); border-color: rgba(201,162,39,0.4); }
@@ -565,7 +658,7 @@ async function fetchRandom(n = 5) {
 
 async function fetchDetails(titles) {
   const t   = titles.map(encodeURIComponent).join('|');
-  const url = `${API}?action=query&titles=${t}&prop=revisions|categories|links|pageimages&rvprop=size&cllimit=20&pllimit=30&pithumbsize=200&format=json&origin=*`;
+  const url = `${API}?action=query&titles=${t}&prop=revisions|categories|links|pageimages|extracts&rvprop=size&cllimit=20&pllimit=30&pithumbsize=300&exintro=1&exchars=300&exsentences=3&explaintext=1&format=json&origin=*`;
   const r   = await fetch(url);
   const d   = await r.json();
   return Object.values(d.query.pages);
@@ -598,11 +691,12 @@ function makeCard(page, forcedRarity) {
 
   return {
     id,
-    title: page?.title || 'Unknown Article',
+    title:   page?.title || 'Unknown Article',
     rarity,
     type:    TYPES [id % TYPES.length],
     emoji:   EMOJIS[id % EMOJIS.length],
     thumb:   page?.thumbnail?.source || null,
+    extract: page?.extract || '',
     hp:      Math.max(hp,  12),
     maxHp:   Math.max(hp,  12),
     atk:     Math.max(atk,  4),
@@ -657,23 +751,52 @@ async function openPack() {
 }
 
 function cardHTML(c) {
-  const thumbHTML = c.thumb
-    ? `<div class="card-thumb"><img src="${c.thumb}" alt="${c.title}" loading="lazy"></div>`
-    : `<div class="card-thumb">${c.emoji}</div>`;
+  const imageHTML = c.thumb
+    ? `<div class="card-image"><img src="${c.thumb}" alt="${c.title}" loading="lazy"></div>`
+    : `<div class="card-image">${c.emoji}</div>`;
 
+  // Split extract into body text + try to make a one-line flavour sentence
+  const fullText = c.extract || '';
+  const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [];
+  const excerpt  = sentences.slice(0, 3).join(' ').trim() || fullText.slice(0, 200);
+  // Flavour: riff on the title in a fantasy-card style
+  const flavours = [
+    `A legendary ${c.title.toLowerCase()} defies all known logic.`,
+    `Those who have read about ${c.title} are never quite the same.`,
+    `${c.title} — feared by scholars, beloved by idiots.`,
+    `The very mention of ${c.title} causes historians to weep.`,
+    `No one truly understands ${c.title}. That's the point.`,
+  ];
+  const flavour = flavours[c.id % flavours.length];
+
+  // Only show 2 stats on card face (ATK + DEF, like the screenshot)
   return `
-    <div class="card rarity-${c.rarity}" onclick="window.open('${c.url}','_blank')" title="Open on Uncyclopedia">
-      <span class="rarity-badge">${c.rarity}</span>
-      ${thumbHTML}
-      <div class="card-name">${c.title}</div>
-      <div class="card-type">${c.type}</div>
-      <div class="card-stats">
-        <div class="stat"><span class="stat-val">${c.hp}</span>HP</div>
-        <div class="stat"><span class="stat-val">${c.atk}</span>ATK</div>
-        <div class="stat"><span class="stat-val">${c.def}</span>DEF</div>
-        <div class="stat"><span class="stat-val">${c.spd}</span>SPD</div>
+    <a class="card rarity-${c.rarity}" href="${c.url}" target="_blank" rel="noopener" title="Open on Uncyclopedia" style="animation-delay:${Math.random()*0.2}s">
+      <div class="card-inner">
+        <div class="card-header">
+          <span class="rarity-badge">${c.rarity}</span>
+          <span class="card-title">${c.title}</span>
+        </div>
+        ${imageHTML}
+        <div class="card-excerpt">${excerpt || 'No summary available for this article.'}</div>
+        <div class="card-flavour">${flavour}</div>
+        <div class="card-stats">
+          <div class="stat">
+            <span class="stat-label">ATK</span>
+            <span class="stat-val">${c.atk}</span>
+          </div>
+          <div class="stat">
+            <span class="stat-label">DEF</span>
+            <span class="stat-val">${c.def}</span>
+          </div>
+        </div>
+        <div class="card-tags">
+          <span class="card-tag">${c.type}</span>
+          <span class="card-tag">HP ${c.hp}</span>
+          <span class="card-tag">SPD ${c.spd}</span>
+        </div>
       </div>
-    </div>`;
+    </a>`;
 }
 
 // ── DECK ───────────────────────────────────────────────────────────────
@@ -687,15 +810,12 @@ function renderDeck() {
   }
 
   grid.innerHTML = deck.map(c => `
-    <div class="mini-card">
+    <a class="mini-card" href="${c.url}" target="_blank" rel="noopener">
       <div style="font-size:24px">${c.emoji}</div>
       <div class="mname">${c.title}</div>
       <div class="mtype">${c.rarity} · ${c.type}</div>
-      <div class="mstats">${c.hp} HP · ${c.atk} ATK · ${c.def} DEF</div>
-      <a class="mlink" href="${c.url}" target="_blank" onclick="event.stopPropagation()">
-        View article ↗
-      </a>
-    </div>`).join('');
+      <div class="mstats">${c.atk} ATK · ${c.def} DEF · ${c.hp} HP</div>
+    </a>`).join('');
 }
 
 // ── BATTLE SETUP ───────────────────────────────────────────────────────
