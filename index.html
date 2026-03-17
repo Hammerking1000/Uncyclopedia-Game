@@ -574,10 +574,10 @@
     -webkit-box-orient: vertical;
   }
 
-  /* Stats bar */
+  /* Stats bar — 3 columns now */
   .card-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr;
     background: #0a0804;
     border-top: 2px solid rgba(255,255,255,0.06);
   }
@@ -587,9 +587,10 @@
     flex-direction: column;
     align-items: center;
     padding: 7px 4px;
+    border-right: 1px solid rgba(255,255,255,0.05);
   }
 
-  .stat:first-child { border-right: 1px solid rgba(255,255,255,0.06); }
+  .stat:last-child { border-right: none; }
 
   .stat-label {
     font-size: 9px;
@@ -599,18 +600,118 @@
     margin-bottom: 2px;
   }
 
-  .rarity-C   .stat-label { color: #888; }
-  .rarity-R   .stat-label { color: #e89050; }
-  .rarity-SR  .stat-label { color: #70b0f0; }
-  .rarity-SSR .stat-label { color: #c080f8; }
-  .rarity-UR  .stat-label { color: var(--gold-lt); }
+  /* ATK = red */
+  .stat.stat-atk .stat-label { color: #ff6060; }
+  .stat.stat-atk .stat-val   { color: #ff7070; text-shadow: 0 0 8px rgba(255,80,80,0.7), 0 0 20px rgba(255,60,60,0.4); }
+
+  /* DEF = blue */
+  .stat.stat-def .stat-label { color: #60b0ff; }
+  .stat.stat-def .stat-val   { color: #70b8ff; text-shadow: 0 0 8px rgba(60,140,255,0.7), 0 0 20px rgba(40,120,255,0.4); }
+
+  /* HP = green */
+  .stat.stat-hp .stat-label { color: #60e090; }
+  .stat.stat-hp .stat-val   { color: #70e898; text-shadow: 0 0 8px rgba(60,200,100,0.7), 0 0 20px rgba(40,180,80,0.4); }
 
   .stat-val {
     font-size: 26px;
     font-weight: 700;
-    color: #f0e8d0;
     line-height: 1;
   }
+
+  /* Favorite star on card corner */
+  .card-star {
+    position: absolute;
+    top: -8px;
+    left: -6px;
+    font-size: 18px;
+    z-index: 4;
+    pointer-events: none;
+    line-height: 1;
+    filter: drop-shadow(0 0 4px rgba(255,220,40,0.9));
+    display: none;
+  }
+
+  .card.favorited .card-star { display: block; }
+
+  /* Merge badge — shows duplicate count */
+  .card-dupe-badge {
+    position: absolute;
+    bottom: -6px;
+    left: -6px;
+    background: var(--purple);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    z-index: 4;
+    pointer-events: none;
+    letter-spacing: 0.5px;
+    display: none;
+    border: 1px solid rgba(255,255,255,0.2);
+  }
+
+  /* Fav tab */
+  .rtab.fav.active { background: #b8860b; border-color: #b8860b; color: #fff; }
+
+  /* Modal action row */
+  .modal-actions {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+  }
+
+  .modal-star-btn, .modal-merge-btn {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 8px;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .modal-star-btn {
+    background: transparent;
+    border: 1.5px solid #b8860b;
+    color: #f0c040;
+  }
+
+  .modal-star-btn:hover { background: rgba(184,134,11,0.2); }
+  .modal-star-btn.starred { background: rgba(184,134,11,0.25); border-color: #f0c040; }
+
+  .modal-merge-btn {
+    background: transparent;
+    border: 1.5px solid var(--purple);
+    color: #c080f8;
+  }
+
+  .modal-merge-btn:hover { background: rgba(123,58,200,0.2); }
+  .modal-merge-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* Merge candidate cards */
+  .merge-candidate {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    cursor: pointer;
+    transition: all 0.12s;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .merge-candidate:hover { border-color: var(--purple); }
+  .merge-candidate.selected { border-color: #c080f8; background: rgba(123,58,200,0.15); }
+  .merge-candidate.disabled { opacity: 0.3; cursor: default; pointer-events: none; }
+
+  .merge-candidate .mc-name { font-size: 11px; font-weight: 700; line-height: 1.2; }
+  .merge-candidate .mc-rarity { font-size: 10px; color: var(--muted); }
+  .merge-candidate .mc-stats { font-size: 10px; color: var(--gold); }
 
   /* Type tags */
   .card-tags {
@@ -1043,8 +1144,7 @@
         <button class="stack-arrow" id="stack-next" onclick="stackNav(1)">&#8250;</button>
       </div>
       <div class="stack-actions">
-        <button class="pull-btn" onclick="resetToIdle()">← Back</button>
-        <button class="pull-btn" onclick="startPull()">Pull Again</button>
+        <button class="pull-btn" onclick="resetToIdle()">← Back to Potato</button>
       </div>
     </div>
 
@@ -1081,6 +1181,7 @@
       <!-- Rarity filter tabs -->
       <div class="rarity-tabs">
         <button class="rtab active" onclick="setRarity('ALL',this)">All</button>
+        <button class="rtab fav"    onclick="setRarity('FAV',this)">⭐ Faves</button>
         <button class="rtab ur"     onclick="setRarity('UR',this)">UR</button>
         <button class="rtab ssr"    onclick="setRarity('SSR',this)">SSR</button>
         <button class="rtab sr"     onclick="setRarity('SR',this)">SR</button>
@@ -1098,9 +1199,27 @@
     <div class="modal-box">
       <button class="modal-close" onclick="closeModal()">✕</button>
       <div id="modal-card-wrap"></div>
+      <div class="modal-actions">
+        <button class="modal-star-btn" id="modal-star-btn" onclick="toggleFavorite()">☆ Favorite</button>
+        <button class="modal-merge-btn" id="modal-merge-btn" onclick="openMergePanel()">⚗️ Merge</button>
+      </div>
       <a id="modal-link" href="#" target="_blank" rel="noopener" class="modal-link-btn">
         Open on Uncyclopedia ↗
       </a>
+    </div>
+  </div>
+
+  <!-- MERGE PANEL MODAL -->
+  <div id="merge-modal" class="modal-backdrop" onclick="closeMergeModal(event)" style="display:none">
+    <div class="modal-box" style="max-width:480px;width:90%">
+      <button class="modal-close" onclick="closeMergeModal()">✕</button>
+      <div style="width:100%">
+        <p style="font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--gold);text-align:center;margin-bottom:4px">⚗️ Merge Cards</p>
+        <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px">Combine two cards of the same rarity to advance one to the next tier</p>
+        <div id="merge-slots" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:16px"></div>
+        <div id="merge-candidates" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-height:260px;overflow-y:auto;padding:4px"></div>
+        <button class="pull-btn" id="merge-confirm-btn" onclick="confirmMerge()" disabled style="display:block;margin:16px auto 0;opacity:0.4">Merge →</button>
+      </div>
     </div>
   </div>
 
@@ -1446,11 +1565,9 @@ function cardHTML(c) {
     ? `<div class="card-image"><img src="${c.thumb}" alt="${c.title}" loading="lazy"></div>`
     : `<div class="card-image">${c.emoji}</div>`;
 
-  // Split extract into body text + try to make a one-line flavour sentence
   const fullText = c.extract || '';
   const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [];
   const excerpt  = sentences.slice(0, 3).join(' ').trim() || fullText.slice(0, 200);
-  // Flavour: riff on the title in a fantasy-card style
   const flavours = [
     `A legendary ${c.title.toLowerCase()} defies all known logic.`,
     `Those who have read about ${c.title} are never quite the same.`,
@@ -1460,9 +1577,19 @@ function cardHTML(c) {
   ];
   const flavour = flavours[c.id % flavours.length];
 
-  // Only show 2 stats on card face (ATK + DEF, like the screenshot)
+  // Count dupes in deck
+  const dupeCount = deck.filter(d => d.title === c.title).length;
+  const dupeBadge = dupeCount > 1
+    ? `<div class="card-dupe-badge" style="display:block">×${dupeCount}</div>` : '';
+
+  const starEl = `<div class="card-star">⭐</div>`;
+  const favClass = c.favorite ? ' favorited' : '';
+  const mergeTag = c.merged ? `<span class="card-tag" style="color:#c080f8;border-color:#c080f8">+${c.mergeLevel||1}</span>` : '';
+
   return `
-    <a class="card rarity-${c.rarity}" href="${c.url}" target="_blank" rel="noopener" title="Open on Uncyclopedia" style="animation-delay:${Math.random()*0.2}s">
+    <a class="card rarity-${c.rarity}${favClass}" href="${c.url}" target="_blank" rel="noopener" title="Open on Uncyclopedia" style="animation-delay:${Math.random()*0.2}s">
+      ${starEl}
+      ${dupeBadge}
       <div class="card-inner">
         <div class="card-header">
           <span class="rarity-badge">${c.rarity}</span>
@@ -1472,19 +1599,23 @@ function cardHTML(c) {
         <div class="card-excerpt">${excerpt || 'No summary available for this article.'}</div>
         <div class="card-flavour">${flavour}</div>
         <div class="card-stats">
-          <div class="stat">
+          <div class="stat stat-atk">
             <span class="stat-label">ATK</span>
             <span class="stat-val">${c.atk}</span>
           </div>
-          <div class="stat">
+          <div class="stat stat-def">
             <span class="stat-label">DEF</span>
             <span class="stat-val">${c.def}</span>
+          </div>
+          <div class="stat stat-hp">
+            <span class="stat-label">HP</span>
+            <span class="stat-val">${c.hp}</span>
           </div>
         </div>
         <div class="card-tags">
           <span class="card-tag">${c.type}</span>
-          <span class="card-tag">HP ${c.hp}</span>
           <span class="card-tag">SPD ${c.spd}</span>
+          ${mergeTag}
         </div>
       </div>
     </a>`;
@@ -1521,10 +1652,11 @@ function renderDeck() {
 
   let cards = [...deck];
 
-  // Filter by rarity
-  if (collRarity !== 'ALL') cards = cards.filter(c => c.rarity === collRarity);
+  // Filter
+  if (collRarity === 'FAV') cards = cards.filter(c => c.favorite);
+  else if (collRarity !== 'ALL') cards = cards.filter(c => c.rarity === collRarity);
 
-  // Filter by search
+  // Search
   if (search) cards = cards.filter(c => c.title.toLowerCase().includes(search));
 
   // Sort
@@ -1539,35 +1671,176 @@ function renderDeck() {
 
   grid.innerHTML = cards.map(c => {
     const html = cardHTML(c);
-    // Intercept all clicks on this wrapper — open modal, never navigate
     return `<div onclick="openModal(${c.id});event.preventDefault();" style="cursor:pointer">${html}</div>`;
   }).join('');
 }
 
 // ── CARD VIEWER MODAL ──────────────────────────────────────────────────
+let modalCardId = null;
+
 function openModal(id) {
   const c = deck.find(c => c.id == id);
   if (!c) return;
+  modalCardId = c.id;
 
-  // Render card HTML then neutralize the anchor so clicking the card doesn't navigate
   const wrap = document.getElementById('modal-card-wrap');
   wrap.innerHTML = cardHTML(c);
   const anchor = wrap.querySelector('a.card');
-  if (anchor) {
-    anchor.removeAttribute('href');
-    anchor.style.cursor = 'default';
-  }
+  if (anchor) { anchor.removeAttribute('href'); anchor.style.cursor = 'default'; }
 
   document.getElementById('modal-link').href = c.url;
+
+  // Star button state
+  const starBtn = document.getElementById('modal-star-btn');
+  starBtn.textContent = c.favorite ? '⭐ Favorited' : '☆ Favorite';
+  starBtn.classList.toggle('starred', !!c.favorite);
+
+  // Merge button — enabled if another card of same rarity exists
+  const canMerge = deck.filter(d => d.rarity === c.rarity && d.id !== c.id).length > 0
+    && c.rarity !== 'UR'; // UR can't be merged further
+  const mergeBtn = document.getElementById('modal-merge-btn');
+  mergeBtn.disabled = !canMerge;
+  mergeBtn.title = !canMerge ? (c.rarity === 'UR' ? 'UR cards cannot be merged' : 'Need another card of same rarity') : 'Merge with another card';
+
   document.getElementById('card-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
 }
 
 function closeModal(e) {
-  // Close if clicking backdrop or the X button (not the card itself)
   if (e && e.target !== document.getElementById('card-modal')) return;
   document.getElementById('card-modal').style.display = 'none';
   document.body.style.overflow = '';
+  modalCardId = null;
+}
+
+// ── FAVORITES ─────────────────────────────────────────────────────────
+function toggleFavorite() {
+  const c = deck.find(d => d.id == modalCardId);
+  if (!c) return;
+  c.favorite = !c.favorite;
+  save();
+  // Update star button
+  const starBtn = document.getElementById('modal-star-btn');
+  starBtn.textContent = c.favorite ? '⭐ Favorited' : '☆ Favorite';
+  starBtn.classList.toggle('starred', c.favorite);
+  // Update the card in the modal
+  const wrap = document.getElementById('modal-card-wrap');
+  wrap.innerHTML = cardHTML(c);
+  const anchor = wrap.querySelector('a.card');
+  if (anchor) { anchor.removeAttribute('href'); anchor.style.cursor = 'default'; }
+}
+
+// ── MERGE SYSTEM ──────────────────────────────────────────────────────
+const RARITY_ORDER = ['C','R','SR','SSR','UR'];
+let mergeTargetId = null; // the card we're sacrificing
+
+function openMergePanel() {
+  const base = deck.find(d => d.id == modalCardId);
+  if (!base) return;
+
+  // Close card modal first, open merge modal
+  document.getElementById('card-modal').style.display = 'none';
+
+  mergeTargetId = null;
+
+  // Show base card slot
+  document.getElementById('merge-slots').innerHTML = `
+    <div style="text-align:center">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Base Card</p>
+      <div style="padding:3px;background:linear-gradient(135deg,#6a6a6a,#2a2a2a);border-radius:8px;display:inline-block">
+        <div style="background:#111;border-radius:6px;padding:8px 10px;font-size:12px;font-weight:700;color:#f0e8d0;max-width:120px">
+          <div style="font-size:9px;color:var(--muted);margin-bottom:2px">${base.rarity}</div>
+          ${base.title}
+        </div>
+      </div>
+    </div>
+    <div style="font-size:28px;color:var(--purple);align-self:center">+</div>
+    <div style="text-align:center">
+      <p style="font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;letter-spacing:.5px">Sacrifice</p>
+      <div id="merge-sacrifice-slot" style="padding:3px;background:rgba(123,58,200,0.3);border:2px dashed rgba(123,58,200,0.5);border-radius:8px;min-width:100px;min-height:52px;display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:12px">
+        Select below
+      </div>
+    </div>
+  `;
+
+  // Candidates: same rarity, different id, not the base
+  const candidates = deck.filter(d => d.rarity === base.rarity && d.id !== base.id);
+
+  const container = document.getElementById('merge-candidates');
+  if (!candidates.length) {
+    container.innerHTML = '<p style="color:var(--muted);font-size:13px;text-align:center;grid-column:1/-1;padding:20px">No other cards with the same rarity to merge.</p>';
+  } else {
+    container.innerHTML = candidates.map(c => `
+      <div class="merge-candidate" onclick="selectMergeCandidate(${c.id}, ${base.id})">
+        <div class="mc-name">${c.title}</div>
+        <div class="mc-rarity">${c.rarity} · ${c.type}</div>
+        <div class="mc-stats">ATK ${c.atk} · DEF ${c.def} · HP ${c.hp}</div>
+      </div>`).join('');
+  }
+
+  document.getElementById('merge-confirm-btn').disabled = true;
+  document.getElementById('merge-confirm-btn').style.opacity = '0.4';
+  document.getElementById('merge-modal').style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function selectMergeCandidate(sacrificeId, baseId) {
+  mergeTargetId = sacrificeId;
+  const s = deck.find(d => d.id == sacrificeId);
+
+  // Highlight selected
+  document.querySelectorAll('.merge-candidate').forEach(el => el.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+
+  // Update sacrifice slot
+  document.getElementById('merge-sacrifice-slot').innerHTML = `
+    <div style="padding:6px 10px;font-size:12px;font-weight:700;color:#c080f8;max-width:120px;text-align:center">
+      <div style="font-size:9px;color:var(--muted);margin-bottom:2px">${s.rarity}</div>
+      ${s.title}
+    </div>`;
+
+  const btn = document.getElementById('merge-confirm-btn');
+  btn.disabled = false;
+  btn.style.opacity = '1';
+}
+
+function closeMergeModal(e) {
+  if (e && e.target !== document.getElementById('merge-modal')) return;
+  document.getElementById('merge-modal').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function confirmMerge() {
+  const base = deck.find(d => d.id == modalCardId);
+  const sacrifice = deck.find(d => d.id == mergeTargetId);
+  if (!base || !sacrifice) return;
+
+  // Advance rarity
+  const curIdx = RARITY_ORDER.indexOf(base.rarity);
+  const nextRarity = RARITY_ORDER[Math.min(curIdx + 1, RARITY_ORDER.length - 1)];
+
+  // Stat boost: +15% of current stats rounded
+  base.rarity   = nextRarity;
+  base.atk      = Math.round(base.atk  * 1.15);
+  base.def      = Math.round(base.def  * 1.15);
+  base.hp       = Math.round(base.hp   * 1.15);
+  base.maxHp    = base.hp;
+  base.merged   = true;
+  base.mergeLevel = (base.mergeLevel || 0) + 1;
+
+  // Remove sacrifice card from deck
+  deck = deck.filter(d => d.id != sacrifice.id);
+  save();
+
+  document.getElementById('merge-modal').style.display = 'none';
+  document.body.style.overflow = '';
+  mergeTargetId = null;
+
+  // Show result — reopen modal on merged card
+  setTimeout(() => {
+    openModal(base.id);
+    renderDeck();
+  }, 120);
 }
 
 // ── DEV: CLEANSE ──────────────────────────────────────────────────────
