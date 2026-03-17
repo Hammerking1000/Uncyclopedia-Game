@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UnCycloGacha</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700&family=Barlow+Condensed:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:       #0e0c0a;
+    --surface:  #1a1611;
+    --surface2: #231e18;
+    --border:   rgba(255,255,255,0.08);
+    --text:     #e8e0d0;
+    --muted:    #8a8070;
+    --gold:     #C9A227;
+    --gold-lt:  #F0C84A;
+    --bronze:   #C87A3A;
+    --blue:     #3A7BC8;
+    --purple:   #7B3AC8;
+    --red:      #C83A3A;
+    --green:    #3AC87B;
+    --radius:   12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Barlow Condensed', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── LAYOUT ── */
+  #app { max-width: 960px; margin: 0 auto; padding: 20px 16px 60px; }
+
+  header {
+    text-align: center;
+    padding: 32px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+  }
+
+  h1 {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 28px;
+    color: var(--gold);
+    letter-spacing: 2px;
+    margin-bottom: 6px;
+  }
+
+  .subtitle { font-size: 14px; color: var(--muted); letter-spacing: 0.5px; }
+
+  /* ── TABS ── */
+  .tabs {
+    display: flex;
+    gap: 4px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 4px;
+    margin-bottom: 24px;
+    border: 1px solid var(--border);
+  }
+
+  .tab {
+    flex: 1;
+    padding: 10px 0;
+    text-align: center;
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    cursor: pointer;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: var(--muted);
+    transition: all 0.15s;
+  }
+
+  .tab:hover { color: var(--text); }
+  .tab.active { background: var(--gold); color: #1a1200; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* ── PACK SCREEN ── */
+  .pack-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding: 32px 0 16px;
+  }
+
+  .pack-visual {
+    width: 180px;
+    height: 250px;
+    background: linear-gradient(160deg, #1f1000 0%, #3d2000 50%, #1a0d00 100%);
+    border: 2px solid var(--gold);
+    border-radius: 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.12s, box-shadow 0.12s;
+    box-shadow: 0 0 30px rgba(201,162,39,0.15), inset 0 1px 0 rgba(240,200,74,0.2);
+  }
+
+  .pack-visual:hover {
+    transform: scale(1.04) translateY(-2px);
+    box-shadow: 0 8px 40px rgba(201,162,39,0.25), inset 0 1px 0 rgba(240,200,74,0.2);
+  }
+
+  .pack-visual:active { transform: scale(0.97); }
+
+  .pack-icon { font-size: 52px; margin-bottom: 12px; filter: drop-shadow(0 0 8px rgba(201,162,39,0.4)); }
+
+  .pack-logo {
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 10px;
+    color: var(--gold);
+    text-align: center;
+    line-height: 1.6;
+    padding: 0 12px;
+  }
+
+  .pack-edition {
+    position: absolute;
+    bottom: 14px;
+    font-size: 9px;
+    color: rgba(201,162,39,0.6);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .shimmer {
+    position: absolute;
+    top: -100%;
+    left: -40%;
+    width: 80%;
+    height: 300%;
+    background: linear-gradient(105deg, transparent 35%, rgba(255,230,120,0.12) 50%, transparent 65%);
+    animation: shimmer 3s infinite;
+    pointer-events: none;
+  }
+
+  @keyframes shimmer {
+    0%   { transform: translateX(-60%); }
+    100% { transform: translateX(200%); }
+  }
+
+  .pull-btn {
+    padding: 14px 40px;
+    background: var(--gold);
+    color: #1a1200;
+    border: none;
+    border-radius: var(--radius);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 17px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    cursor: pointer;
+    transition: all 0.12s;
+    box-shadow: 0 4px 16px rgba(201,162,39,0.25);
+  }
+
+  .pull-btn:hover { background: var(--gold-lt); box-shadow: 0 6px 24px rgba(201,162,39,0.4); }
+  .pull-btn:active { transform: scale(0.97); }
+  .pull-btn:disabled { opacity: 0.35; cursor: default; transform: none; box-shadow: none; }
+
+  .packs-info { font-size: 13px; color: var(--muted); }
+
+  /* ── CARDS ── */
+  .cards-reveal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    justify-content: center;
+    padding: 8px 0 16px;
+  }
+
+  .card {
+    width: 148px;
+    min-height: 210px;
+    border-radius: 14px;
+    border: 1.5px solid var(--border);
+    background: var(--surface);
+    padding: 10px 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    overflow: hidden;
+    animation: cardReveal 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  }
+
+  .card:hover { transform: translateY(-5px) scale(1.02); }
+
+  @keyframes cardReveal {
+    from { opacity: 0; transform: perspective(400px) rotateY(90deg) scale(0.8); }
+    to   { opacity: 1; transform: perspective(400px) rotateY(0deg) scale(1); }
+  }
+
+  .card.rarity-C { }
+  .card.rarity-R  { border-color: rgba(200,122,58,0.6); box-shadow: 0 0 10px rgba(200,122,58,0.15); }
+  .card.rarity-SR { border-color: rgba(58,123,200,0.7); box-shadow: 0 0 12px rgba(58,123,200,0.2); }
+  .card.rarity-SSR {
+    border-color: rgba(123,58,200,0.8);
+    box-shadow: 0 0 18px rgba(123,58,200,0.3);
+    background: linear-gradient(160deg, #1a1030 0%, var(--surface) 50%);
+  }
+  .card.rarity-UR {
+    border-color: var(--gold);
+    box-shadow: 0 0 24px rgba(201,162,39,0.4);
+    background: linear-gradient(160deg, #1f1500 0%, var(--surface) 40%);
+  }
+
+  .rarity-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  .rarity-C  .rarity-badge { background: rgba(255,255,255,0.08); color: var(--muted); }
+  .rarity-R  .rarity-badge { background: var(--bronze); color: #fff; }
+  .rarity-SR .rarity-badge { background: var(--blue); color: #fff; }
+  .rarity-SSR .rarity-badge { background: var(--purple); color: #fff; }
+  .rarity-UR .rarity-badge { background: var(--gold); color: #1a1200; }
+
+  .card-thumb {
+    width: 100%;
+    height: 80px;
+    border-radius: 8px;
+    background: var(--surface2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 36px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+
+  .card-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 7px;
+  }
+
+  .card-name {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.25;
+    color: var(--text);
+  }
+
+  .card-type {
+    font-size: 10px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .card-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: auto;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+
+  .stat { font-size: 10px; color: var(--muted); display: flex; flex-direction: column; }
+  .stat-val { font-size: 14px; font-weight: 700; color: var(--text); line-height: 1.1; }
+
+  /* ── DECK ── */
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 14px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .deck-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+
+  .mini-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: transform 0.1s, border-color 0.1s;
+  }
+
+  .mini-card:hover { transform: scale(1.03); border-color: rgba(201,162,39,0.4); }
+  .mini-card .mname { font-size: 12px; font-weight: 700; line-height: 1.2; }
+  .mini-card .mtype { font-size: 10px; color: var(--muted); }
+  .mini-card .mstats { font-size: 11px; color: var(--gold); font-weight: 600; }
+  .mini-card .mlink { font-size: 10px; color: var(--muted); text-decoration: none; margin-top: 2px; display: inline-block; }
+  .mini-card .mlink:hover { color: var(--gold); }
+
+  /* ── BATTLE ── */
+  .fighter-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+
+  .fighter-slot {
+    border: 1.5px dashed rgba(255,255,255,0.1);
+    border-radius: 10px;
+    padding: 12px 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.12s;
+    min-height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    background: var(--surface);
+  }
+
+  .fighter-slot:hover { border-color: rgba(201,162,39,0.4); }
+
+  .fighter-slot.selected {
+    border-color: var(--gold);
+    border-style: solid;
+    background: rgba(201,162,39,0.06);
+    box-shadow: 0 0 12px rgba(201,162,39,0.15);
+  }
+
+  .fighter-slot .fs-emoji { font-size: 28px; }
+  .fighter-slot .fs-name { font-size: 11px; font-weight: 700; line-height: 1.2; }
+  .fighter-slot .fs-hp { font-size: 11px; color: var(--gold); }
+
+  /* Battle arena */
+  .arena { display: flex; flex-direction: column; gap: 14px; }
+
+  .combatant {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .combatant.enemy { flex-direction: row-reverse; }
+  .combatant.enemy .cinfo { align-items: flex-end; text-align: right; }
+
+  .cthumb {
+    width: 56px;
+    height: 72px;
+    background: var(--surface2);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    flex-shrink: 0;
+    border: 1px solid var(--border);
+  }
+
+  .cinfo { display: flex; flex-direction: column; gap: 5px; flex: 1; }
+  .cname { font-size: 17px; font-weight: 700; line-height: 1.2; }
+  .ctype { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .hp-wrap { min-width: 160px; }
+  .hp-label { font-size: 11px; color: var(--muted); margin-bottom: 4px; display: flex; justify-content: space-between; }
+  .hp-bg { height: 10px; background: rgba(255,255,255,0.06); border-radius: 5px; overflow: hidden; border: 1px solid var(--border); }
+  .hp-fill { height: 100%; background: var(--gold); border-radius: 4px; transition: width 0.45s cubic-bezier(0.4, 0, 0.2, 1); }
+  .hp-fill.mid { background: #EF9F27; }
+  .hp-fill.low { background: var(--red); }
+
+  .vs-sep {
+    text-align: center;
+    font-family: 'Cinzel Decorative', serif;
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 3px;
+  }
+
+  .battle-log {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    max-height: 170px;
+    overflow-y: auto;
+    font-size: 13px;
+    line-height: 1.8;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .log-hit  { color: var(--gold-lt); }
+  .log-crit { color: #F09595; font-weight: 700; }
+  .log-heal { color: var(--green); }
+  .log-end  { color: var(--gold); font-weight: 700; font-size: 14px; }
+
+  .battle-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  .battle-btn {
+    padding: 9px 20px;
+    border: 1.5px solid var(--gold);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--gold);
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.12s;
+  }
+
+  .battle-btn:hover { background: var(--gold); color: #1a1200; }
+  .battle-btn:disabled { opacity: 0.3; cursor: default; }
+  .battle-btn.danger { border-color: var(--red); color: var(--red); }
+  .battle-btn.danger:hover { background: var(--red); color: #fff; }
+
+  /* ── UTIL ── */
+  .empty { text-align: center; color: var(--muted); padding: 50px 0; font-size: 15px; grid-column: 1/-1; }
+  .loading { text-align: center; padding: 24px; color: var(--muted); font-size: 14px; }
+
+  .spinner {
+    display: inline-block;
+    width: 16px; height: 16px;
+    border: 2px solid rgba(255,255,255,0.1);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .error { color: var(--red); text-align: center; padding: 20px; font-size: 14px; }
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h1>UnCycloGacha</h1>
+    <p class="subtitle">Pull cards from the depths of Uncyclopedia &mdash; the content-free encyclopedia</p>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active" onclick="switchTab('gacha',this)">🎴 Pull</button>
+    <button class="tab" onclick="switchTab('deck',this)">📦 Collection</button>
+    <button class="tab" onclick="switchTab('battle',this)">⚔️ Battle</button>
+  </div>
+
+  <!-- PULL -->
+  <div id="screen-gacha" class="screen active">
+    <div class="pack-area">
+      <div class="pack-visual" onclick="openPack()">
+        <div class="shimmer"></div>
+        <div class="pack-icon">📖</div>
+        <div class="pack-logo">Uncyclopedia<br>Standard Pack</div>
+        <div class="pack-edition">5 cards per pull</div>
+      </div>
+      <p class="packs-info">Unlimited pulls &mdash; Powered by the Uncyclopedia API</p>
+      <button class="pull-btn" id="pull-btn" onclick="openPack()">Open Pack</button>
+    </div>
+    <div id="pull-loading" class="loading" style="display:none">
+      <span class="spinner"></span>Pulling from Uncyclopedia...
+    </div>
+    <div id="pull-error" class="error" style="display:none"></div>
+    <div id="pull-results" class="cards-reveal"></div>
+  </div>
+
+  <!-- COLLECTION -->
+  <div id="screen-deck" class="screen">
+    <div class="section-header">
+      <span class="section-title">Your Collection</span>
+      <span id="deck-count" style="font-size:13px;color:var(--muted)">0 cards</span>
+    </div>
+    <div id="deck-grid" class="deck-grid">
+      <p class="empty">Pull some packs to start your collection!</p>
+    </div>
+  </div>
+
+  <!-- BATTLE -->
+  <div id="screen-battle" class="screen">
+    <div id="battle-setup">
+      <div class="section-header" style="margin-bottom:12px">
+        <span class="section-title">Choose Your Fighter</span>
+      </div>
+      <div id="fighter-grid" class="fighter-grid">
+        <p class="empty">Pull some cards first!</p>
+      </div>
+      <button class="pull-btn" id="start-btn" onclick="startBattle()" disabled style="display:block;margin:0 auto">
+        ⚔️ Start Battle
+      </button>
+    </div>
+    <div id="battle-arena" style="display:none"></div>
+  </div>
+</div>
+
+<script>
+// ── CONFIG ─────────────────────────────────────────────────────────────
+const API = 'https://en.uncyclopedia.co/api.php';
+
+// ── STATE ──────────────────────────────────────────────────────────────
+let deck     = JSON.parse(localStorage.getItem('ucg_deck') || '[]').map(c => ({...c, maxHp: c.maxHp || c.hp}));
+let selected = null;
+let battle   = null;
+
+function save() { localStorage.setItem('ucg_deck', JSON.stringify(deck)); }
+
+// ── TABS ───────────────────────────────────────────────────────────────
+function switchTab(id, el) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('screen-' + id).classList.add('active');
+  el.classList.add('active');
+  if (id === 'deck')   renderDeck();
+  if (id === 'battle') renderBattleSetup();
+}
+
+// ── UNCYCLOPEDIA API ───────────────────────────────────────────────────
+async function fetchRandom(n = 5) {
+  const url = `${API}?action=query&list=random&rnnamespace=0&rnlimit=${n}&format=json&origin=*`;
+  const r = await fetch(url);
+  const d = await r.json();
+  return d.query.random; // [{id, ns, title}, ...]
+}
+
+async function fetchDetails(titles) {
+  const t   = titles.map(encodeURIComponent).join('|');
+  const url = `${API}?action=query&titles=${t}&prop=revisions|categories|links|pageimages&rvprop=size&cllimit=20&pllimit=30&pithumbsize=200&format=json&origin=*`;
+  const r   = await fetch(url);
+  const d   = await r.json();
+  return Object.values(d.query.pages);
+}
+
+// ── CARD GENERATION ────────────────────────────────────────────────────
+const RARITIES  = [{t:'UR',w:1},{t:'SSR',w:4},{t:'SR',w:15},{t:'R',w:30},{t:'C',w:50}];
+const TYPES     = ['Meme','Stub','Satire','Parody','Nonsense','Propaganda','Vanity','Featured','Conspiracy','Absurdist'];
+const EMOJIS    = ['🐧','🤡','🎩','🌮','🦆','🎭','🏛️','📰','🚀','💀','🤖','🧀','👑','🎪','🦄','🐸','🦖','🍕','🌵','🔮','🦑','🛸','🧲','🏴‍☠️','🧸'];
+
+function rollRarity() {
+  const tot = RARITIES.reduce((s,r) => s + r.w, 0);
+  let roll = Math.random() * tot;
+  for (const r of RARITIES) { roll -= r.w; if (roll <= 0) return r.t; }
+  return 'C';
+}
+
+function makeCard(page, forcedRarity) {
+  const rarity = forcedRarity || rollRarity();
+  const mult   = {C:0.7, R:0.9, SR:1.1, SSR:1.4, UR:1.8}[rarity] || 1;
+  const size   = page?.revisions?.[0]?.size   || 2000;
+  const links  = (page?.links       || []).length;
+  const cats   = (page?.categories  || []).length;
+  const id     = page?.pageid || Math.floor(Math.random() * 99999);
+
+  const hp  = Math.round((size / 80  + 20 + Math.random() * 20) * mult);
+  const atk = Math.round((links * 0.9 + 5  + Math.random() * 12) * mult);
+  const def = Math.round((cats  * 1.5 + 5  + Math.random() * 8)  * mult);
+  const spd = Math.round((Math.random() * 20 + 10) * mult);
+
+  return {
+    id,
+    title: page?.title || 'Unknown Article',
+    rarity,
+    type:    TYPES [id % TYPES.length],
+    emoji:   EMOJIS[id % EMOJIS.length],
+    thumb:   page?.thumbnail?.source || null,
+    hp:      Math.max(hp,  12),
+    maxHp:   Math.max(hp,  12),
+    atk:     Math.max(atk,  4),
+    def:     Math.max(def,  3),
+    spd:     Math.max(spd,  5),
+    url:     'https://en.uncyclopedia.co/wiki/' + encodeURIComponent(page?.title || ''),
+  };
+}
+
+// ── PACK OPENING ───────────────────────────────────────────────────────
+async function openPack() {
+  const btn     = document.getElementById('pull-btn');
+  const loading = document.getElementById('pull-loading');
+  const errEl   = document.getElementById('pull-error');
+  const results = document.getElementById('pull-results');
+
+  btn.disabled       = true;
+  loading.style.display = 'block';
+  errEl.style.display   = 'none';
+  results.innerHTML     = '';
+
+  try {
+    const randoms = await fetchRandom(5);
+    const pages   = await fetchDetails(randoms.map(r => r.title));
+
+    const cards = randoms.map((r, i) => {
+      const page = pages.find(p => p.title === r.title) || { title: r.title, pageid: r.id };
+      // Guarantee at least one R on first card (soft pity)
+      const rarity = rollRarity();
+      return makeCard(page, i === 0 && rarity === 'C' ? 'R' : rarity);
+    });
+
+    loading.style.display = 'none';
+
+    cards.forEach((card, i) => {
+      setTimeout(() => {
+        results.insertAdjacentHTML('beforeend', cardHTML(card));
+      }, i * 150);
+    });
+
+    deck.push(...cards);
+    save();
+
+  } catch (err) {
+    loading.style.display = 'none';
+    errEl.style.display   = 'block';
+    errEl.textContent     = '⚠️ Could not reach Uncyclopedia: ' + err.message;
+    console.error(err);
+  }
+
+  btn.disabled = false;
+}
+
+function cardHTML(c) {
+  const thumbHTML = c.thumb
+    ? `<div class="card-thumb"><img src="${c.thumb}" alt="${c.title}" loading="lazy"></div>`
+    : `<div class="card-thumb">${c.emoji}</div>`;
+
+  return `
+    <div class="card rarity-${c.rarity}" onclick="window.open('${c.url}','_blank')" title="Open on Uncyclopedia">
+      <span class="rarity-badge">${c.rarity}</span>
+      ${thumbHTML}
+      <div class="card-name">${c.title}</div>
+      <div class="card-type">${c.type}</div>
+      <div class="card-stats">
+        <div class="stat"><span class="stat-val">${c.hp}</span>HP</div>
+        <div class="stat"><span class="stat-val">${c.atk}</span>ATK</div>
+        <div class="stat"><span class="stat-val">${c.def}</span>DEF</div>
+        <div class="stat"><span class="stat-val">${c.spd}</span>SPD</div>
+      </div>
+    </div>`;
+}
+
+// ── DECK ───────────────────────────────────────────────────────────────
+function renderDeck() {
+  const grid = document.getElementById('deck-grid');
+  document.getElementById('deck-count').textContent = deck.length + ' cards';
+
+  if (!deck.length) {
+    grid.innerHTML = '<p class="empty">Pull some packs to start your collection!</p>';
+    return;
+  }
+
+  grid.innerHTML = deck.map(c => `
+    <div class="mini-card">
+      <div style="font-size:24px">${c.emoji}</div>
+      <div class="mname">${c.title}</div>
+      <div class="mtype">${c.rarity} · ${c.type}</div>
+      <div class="mstats">${c.hp} HP · ${c.atk} ATK · ${c.def} DEF</div>
+      <a class="mlink" href="${c.url}" target="_blank" onclick="event.stopPropagation()">
+        View article ↗
+      </a>
+    </div>`).join('');
+}
+
+// ── BATTLE SETUP ───────────────────────────────────────────────────────
+function renderBattleSetup() {
+  const grid = document.getElementById('fighter-grid');
+  const btn  = document.getElementById('start-btn');
+
+  if (!deck.length) {
+    grid.innerHTML = '<p class="empty">Pull some cards first!</p>';
+    btn.disabled = true;
+    return;
+  }
+
+  grid.innerHTML = deck.map(c => `
+    <div class="fighter-slot ${selected?.id == c.id ? 'selected' : ''}" onclick="selectFighter(${c.id})">
+      <div class="fs-emoji">${c.emoji}</div>
+      <div class="fs-name">${c.title}</div>
+      <div class="fs-hp">${c.hp} HP</div>
+    </div>`).join('');
+
+  btn.disabled = !selected;
+}
+
+function selectFighter(id) {
+  selected = deck.find(c => c.id == id) || null;
+  renderBattleSetup();
+}
+
+// ── BATTLE ENGINE ──────────────────────────────────────────────────────
+async function startBattle() {
+  if (!selected) return;
+  const arena = document.getElementById('battle-arena');
+  document.getElementById('battle-setup').style.display = 'none';
+  arena.style.display = 'block';
+  arena.innerHTML = '<div class="loading"><span class="spinner"></span>Summoning your opponent from the wiki...</div>';
+
+  let enemy;
+  try {
+    const [r] = await fetchRandom(1);
+    const [page] = await fetchDetails([r.title]);
+    enemy = makeCard(page || { title: r.title, pageid: r.id });
+  } catch {
+    // Fallback if API fails mid-battle
+    const fallbacks = ['Oscar Wilde','Kitten Huffing','Uncyclopedia','Flying Spaghetti Monster','Chuck Norris'];
+    enemy = makeCard({ title: fallbacks[Math.floor(Math.random()*fallbacks.length)], pageid: 9999 });
+  }
+
+  battle = {
+    player: { ...selected },
+    enemy,
+    log: [],
+    over: false,
+  };
+  renderArena();
+}
+
+function renderArena() {
+  const { player, enemy, log, over } = battle;
+  const pPct = Math.max(0, (player.hp / player.maxHp) * 100);
+  const ePct = Math.max(0, (enemy.hp  / (enemy.maxHp || enemy.hp)) * 100);
+  const barClass = p => p > 50 ? '' : p > 25 ? 'mid' : 'low';
+
+  document.getElementById('battle-arena').innerHTML = `
+    <div class="arena">
+      <div class="combatant">
+        <div class="cthumb">${player.emoji}</div>
+        <div class="cinfo">
+          <div class="cname">${player.title}</div>
+          <div class="ctype">${player.rarity} · ${player.type}</div>
+          <div class="hp-wrap">
+            <div class="hp-label"><span>HP</span><span>${player.hp} / ${player.maxHp}</span></div>
+            <div class="hp-bg"><div class="hp-fill ${barClass(pPct)}" style="width:${pPct}%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="vs-sep">— VS —</div>
+
+      <div class="combatant enemy">
+        <div class="cthumb">${enemy.emoji}</div>
+        <div class="cinfo">
+          <div class="cname">${enemy.title}</div>
+          <div class="ctype">${enemy.rarity} · ${enemy.type}</div>
+          <div class="hp-wrap">
+            <div class="hp-label"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>
+            <div class="hp-bg"><div class="hp-fill ${barClass(ePct)}" style="width:${ePct}%"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="battle-log" id="blog">
+        ${log.map(e => `<div class="${e.c}">${e.m}</div>`).join('')}
+      </div>
+
+      <div class="battle-actions">
+        ${!over ? `
+          <button class="battle-btn" onclick="act('attack')">⚔️ Attack</button>
+          <button class="battle-btn" onclick="act('special')">✨ Special</button>
+          <button class="battle-btn" onclick="act('defend')">🛡️ Defend</button>
+          <button class="battle-btn danger" onclick="endBattle()">✕ Forfeit</button>
+        ` : `
+          <button class="battle-btn" onclick="endBattle()">🔄 New Battle</button>
+          <button class="battle-btn" onclick="switchTab('gacha', document.querySelectorAll('.tab')[0])">🎴 Pull More</button>
+        `}
+      </div>
+    </div>`;
+
+  const bl = document.getElementById('blog');
+  if (bl) bl.scrollTop = bl.scrollHeight;
+}
+
+function addLog(m, c = '') { battle.log.push({ m, c }); }
+
+function act(action) {
+  if (!battle || battle.over) return;
+  const { player, enemy } = battle;
+
+  if (action === 'attack') {
+    const base = Math.max(1, player.atk - enemy.def + Math.round((Math.random() - 0.3) * 12));
+    const crit = Math.random() < 0.15;
+    const dmg  = crit ? Math.round(base * 1.9) : base;
+    enemy.hp   = Math.max(0, enemy.hp - dmg);
+    addLog(
+      crit
+        ? `💥 CRITICAL HIT! ${player.title} strikes ${enemy.title} for ${dmg}!`
+        : `⚔️ ${player.title} attacks ${enemy.title} for ${dmg} damage.`,
+      crit ? 'log-crit' : 'log-hit'
+    );
+  } else if (action === 'special') {
+    const dmg  = Math.max(2, Math.round(player.atk * 1.6 + player.spd * 0.4) - enemy.def);
+    enemy.hp   = Math.max(0, enemy.hp - dmg);
+    addLog(`✨ ${player.title} unleashes a special for ${dmg} damage!`, 'log-crit');
+  } else if (action === 'defend') {
+    const heal = Math.round(player.def * 0.6 + 6 + Math.random() * 5);
+    player.hp  = Math.min(player.maxHp, player.hp + heal);
+    addLog(`🛡️ ${player.title} braces and recovers ${heal} HP.`, 'log-heal');
+  }
+
+  // Enemy turn (skips if already dead)
+  if (enemy.hp > 0) {
+    const eDef  = action === 'defend' ? Math.round(player.def * 0.4) : Math.round(player.def * 0.75);
+    const eDmg  = Math.max(1, enemy.atk - eDef + Math.round((Math.random() - 0.3) * 10));
+    player.hp   = Math.max(0, player.hp - eDmg);
+    addLog(`🔴 ${enemy.title} retaliates for ${eDmg}.`);
+  }
+
+  // Check result
+  if (enemy.hp <= 0) {
+    addLog(`🏆 Victory! ${enemy.title} has been defeated!`, 'log-end');
+    battle.over = true;
+  } else if (player.hp <= 0) {
+    addLog(`💀 ${player.title} has fallen. Defeat.`, 'log-end');
+    battle.over = true;
+  }
+
+  renderArena();
+}
+
+function endBattle() {
+  battle   = null;
+  selected = null;
+  document.getElementById('battle-arena').style.display = 'none';
+  document.getElementById('battle-setup').style.display = 'block';
+  renderBattleSetup();
+}
+</script>
+</body>
+</html>
