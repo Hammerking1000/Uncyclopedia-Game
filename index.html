@@ -106,13 +106,23 @@
     transition: transform 0.12s;
   }
 
-  .bag-wrap:hover { transform: scale(1.04) translateY(-3px); }
-  .bag-wrap:active { transform: scale(0.97); }
+  .bag-wrap:hover { animation: potato-wobble 0.5s ease; }
+  .bag-wrap:active { transform: scale(0.94); }
+
+  @keyframes potato-wobble {
+    0%   { transform: scale(1) rotate(0deg); }
+    20%  { transform: scale(1.06) rotate(-4deg); }
+    40%  { transform: scale(1.06) rotate(4deg); }
+    60%  { transform: scale(1.04) rotate(-2deg); }
+    80%  { transform: scale(1.02) rotate(1deg); }
+    100% { transform: scale(1) rotate(0deg); }
+  }
 
   .bag-svg {
-    width: 200px;
-    height: 200px;
-    filter: drop-shadow(0 8px 32px rgba(201,162,39,0.35));
+    width: 240px;
+    height: auto;
+    display: block;
+    filter: drop-shadow(0 8px 32px rgba(180,150,80,0.5));
   }
 
   .bag-pulse {
@@ -456,6 +466,7 @@
     overflow: hidden;
     display: flex;
     flex-direction: column;
+    width: 100%;
   }
 
   /* Rarity + title bar */
@@ -503,6 +514,7 @@
     justify-content: center;
     font-size: 48px;
     flex-shrink: 0;
+    flex-grow: 0;
   }
 
   .card-image img {
@@ -511,6 +523,10 @@
     object-fit: cover;
     object-position: center top;
     display: block;
+    min-width: 0;
+    min-height: 0;
+    max-width: 100%;
+    max-height: 100%;
   }
 
   /* Excerpt */
@@ -715,8 +731,13 @@
     justify-items: center;
   }
 
-  /* Collection cards are the same .card style — just no animation on load */
-  .deck-grid .card { animation: none; width: 100%; max-width: 185px; }
+  /* Collection cards — fixed width, no resize from image */
+  .deck-grid .card {
+    animation: none;
+    width: 155px;
+    min-width: 155px;
+    max-width: 155px;
+  }
   /* Prevent the anchor inside a collection wrapper from navigating */
   .deck-grid div > a.card { pointer-events: none; }
 
@@ -739,8 +760,8 @@
     flex-direction: column;
     align-items: center;
     gap: 16px;
-    max-width: 340px;
-    width: 100%;
+    width: 300px;
+    flex-shrink: 0;
     animation: modalIn 0.25s cubic-bezier(0.34, 1.4, 0.64, 1);
   }
 
@@ -772,7 +793,9 @@
 
   /* Card inside modal — full width, no animation, not clickable */
   .modal-box .card {
-    width: 100%;
+    width: 290px;
+    min-width: 290px;
+    max-width: 290px;
     animation: none;
     cursor: default;
     pointer-events: none;
@@ -971,29 +994,11 @@
 
     <!-- State A: idle bag -->
     <div id="gacha-idle">
-      <div class="bag-wrap" onclick="startPull()">
+      <div class="bag-wrap" onclick="startPull()" id="bag-wrap">
         <div class="bag-pulse"></div>
-        <svg class="bag-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <radialGradient id="bg1" cx="40%" cy="35%"><stop offset="0%" stop-color="#f0c84a"/><stop offset="100%" stop-color="#7a5010"/></radialGradient>
-            <radialGradient id="bg2" cx="40%" cy="30%"><stop offset="0%" stop-color="#ffe090"/><stop offset="100%" stop-color="#c9a227"/></radialGradient>
-            <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5"/></filter>
-          </defs>
-          <!-- Bag body -->
-          <ellipse cx="100" cy="130" rx="68" ry="58" fill="url(#bg1)" filter="url(#shadow)"/>
-          <!-- Bag top neck -->
-          <rect x="72" y="72" width="56" height="30" rx="10" fill="#b88820"/>
-          <!-- Tie / knot -->
-          <ellipse cx="100" cy="72" rx="22" ry="10" fill="url(#bg2)"/>
-          <ellipse cx="100" cy="68" rx="10" ry="7" fill="#f0d060"/>
-          <!-- Shine -->
-          <ellipse cx="80" cy="108" rx="18" ry="22" fill="rgba(255,255,255,0.12)" transform="rotate(-15 80 108)"/>
-          <!-- Uncyclopedia-style W -->
-          <text x="100" y="148" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="bold" fill="rgba(0,0,0,0.18)" letter-spacing="-2">W</text>
-          <text x="100" y="145" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="bold" fill="rgba(255,220,100,0.55)" letter-spacing="-2">W</text>
-        </svg>
+        <img src="potato.webp" class="bag-svg" alt="Uncyclopedia Potato" draggable="false">
       </div>
-      <p class="bag-hint">Tap the bag to pull 5 cards</p>
+      <p class="bag-hint">Tap the potato to pull 5 cards</p>
       <button class="cleanse-btn" onclick="cleanseCards()">🗑️ Cleanse Collection (Dev)</button>
     </div>
 
@@ -1196,9 +1201,9 @@ function playExplosion(onDone) {
   canvas.style.display = 'block';
   const ctx = canvas.getContext('2d');
 
-  // Find bag position on screen to explode from
-  const bagEl = document.querySelector('.bag-wrap');
-  const bagR  = bagEl ? bagEl.getBoundingClientRect() : {left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0};
+  // Find potato image position on screen to explode from its center
+  const potatoEl = document.querySelector('#bag-wrap img.bag-svg') || document.querySelector('.bag-wrap');
+  const bagR  = potatoEl ? potatoEl.getBoundingClientRect() : {left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0};
   const cx = bagR.left + bagR.width  / 2;
   const cy = bagR.top  + bagR.height / 2;
 
