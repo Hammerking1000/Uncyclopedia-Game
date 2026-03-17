@@ -88,50 +88,162 @@
   .screen.active { display: block; }
 
   /* ── PACK SCREEN ── */
-  .pack-area {
+
+  /* State A: the bag sitting there waiting */
+  #gacha-idle {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 16px;
-    padding: 24px 0 16px;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 20px;
   }
 
-  .packs-row {
+  .bag-wrap {
+    position: relative;
+    cursor: pointer;
+    user-select: none;
+    transition: transform 0.12s;
+  }
+
+  .bag-wrap:hover { transform: scale(1.04) translateY(-3px); }
+  .bag-wrap:active { transform: scale(0.97); }
+
+  .bag-svg {
+    width: 200px;
+    height: 200px;
+    filter: drop-shadow(0 8px 32px rgba(201,162,39,0.35));
+  }
+
+  .bag-pulse {
+    position: absolute;
+    inset: -16px;
+    border-radius: 50%;
+    border: 2px solid rgba(201,162,39,0.3);
+    animation: bag-pulse 2.4s ease-in-out infinite;
+    pointer-events: none;
+  }
+
+  @keyframes bag-pulse {
+    0%, 100% { transform: scale(1);    opacity: 0.5; }
+    50%       { transform: scale(1.08); opacity: 0.15; }
+  }
+
+  .bag-hint {
+    font-size: 13px;
+    color: var(--muted);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* State B: explosion + loading */
+  #gacha-exploding {
+    display: none;
+    position: relative;
+    min-height: 60vh;
+    align-items: center;
+    justify-content: center;
+  }
+
+  /* State C: card stack viewer */
+  #gacha-stack {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 24px;
+    padding: 20px 0 32px;
+  }
+
+  .stack-hint {
+    font-size: 12px;
+    color: var(--muted);
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  /* The card stack area */
+  .stack-scene {
+    position: relative;
+    width: 220px;
+    height: 360px;
+    perspective: 800px;
+  }
+
+  /* Each card slot in the stack */
+  .stack-card-wrap {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.45s cubic-bezier(0.34, 1.2, 0.64, 1), opacity 0.3s;
+    transform-origin: bottom center;
+    cursor: grab;
+  }
+
+  .stack-card-wrap:active { cursor: grabbing; }
+
+  /* Cards behind the active one are fanned */
+  .stack-card-wrap.pos-0  { transform: translate(0,0) rotate(0deg); z-index: 10; }
+  .stack-card-wrap.pos-1  { transform: translate(10px, 6px) rotate(3deg) scale(0.97);  z-index: 9; opacity: 0.92; }
+  .stack-card-wrap.pos-2  { transform: translate(20px, 12px) rotate(6deg) scale(0.94); z-index: 8; opacity: 0.82; }
+  .stack-card-wrap.pos-3  { transform: translate(28px, 17px) rotate(8deg) scale(0.91); z-index: 7; opacity: 0.72; }
+  .stack-card-wrap.pos-4  { transform: translate(34px, 21px) rotate(10deg) scale(0.88); z-index: 6; opacity: 0.62; }
+  .stack-card-wrap.pos-hidden { transform: translate(-180px, -40px) rotate(-25deg) scale(0.7); opacity: 0; z-index: 5; pointer-events: none; }
+
+  /* While dragging the top card */
+  .stack-card-wrap.dragging {
+    transition: none;
+    cursor: grabbing;
+    z-index: 20;
+  }
+
+  /* Nav arrows */
+  .stack-nav {
     display: flex;
-    gap: 32px;
+    align-items: center;
+    gap: 60px;
+  }
+
+  .stack-arrow {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.04);
+    color: var(--text);
+    font-size: 20px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+    user-select: none;
+  }
+
+  .stack-arrow:hover { background: rgba(255,255,255,0.1); border-color: var(--gold); color: var(--gold); }
+  .stack-arrow:disabled { opacity: 0.2; cursor: default; }
+
+  .stack-counter {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--muted);
+    letter-spacing: 1px;
+    min-width: 48px;
+    text-align: center;
+  }
+
+  /* Bottom action buttons */
+  .stack-actions {
+    display: flex;
+    gap: 12px;
     flex-wrap: wrap;
     justify-content: center;
   }
 
-  .pack-wrap {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .special-pack {
-    background: linear-gradient(160deg, #200030 0%, #500080 50%, #180022 100%) !important;
-    border-color: #c080f8 !important;
-    box-shadow: 0 0 30px rgba(160,80,240,0.35) !important;
-  }
-
-  .special-pack .pack-logo { color: #c080f8; }
-  .special-pack .pack-edition { color: rgba(192,128,248,0.7); }
-
-  .special-pull-btn {
-    background: linear-gradient(135deg, #c080f8, #7030c0) !important;
-    box-shadow: 0 4px 16px rgba(160,80,240,0.4) !important;
-  }
-
-  .special-pull-btn:hover { background: linear-gradient(135deg, #d090ff, #8040d0) !important; }
-  .special-pull-btn:disabled { opacity: 0.35 !important; }
-
-  .special-cooldown {
-    font-size: 11px;
-    color: #a060d0;
-    min-height: 16px;
-    text-align: center;
+  /* Explosion canvas — fixed fullscreen */
+  #explode-stage {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 150;
+    display: none;
+    width: 100vw;
+    height: 100vh;
   }
 
   .pack-visual {
@@ -853,40 +965,63 @@
 
   <!-- PULL -->
   <div id="screen-gacha" class="screen active">
-    <div class="pack-area">
-      <div class="packs-row">
-        <div class="pack-wrap">
-          <div class="pack-visual" onclick="openPack('normal')">
-            <div class="shimmer"></div>
-            <div class="pack-icon">📖</div>
-            <div class="pack-logo">Uncyclopedia<br>Standard Pack</div>
-            <div class="pack-edition">5 cards per pull</div>
-          </div>
-          <button class="pull-btn" onclick="openPack('normal')">Open Pack</button>
-        </div>
-        <div class="pack-wrap" id="special-pack-wrap">
-          <div class="pack-visual special-pack" onclick="openPack('special')">
-            <div class="shimmer"></div>
-            <div class="pack-icon">✨</div>
-            <div class="pack-logo">Special<br>Premium Pack</div>
-            <div class="pack-edition">Guaranteed SR+</div>
-          </div>
-          <button class="pull-btn special-pull-btn" onclick="openPack('special')">Open Special</button>
-          <div id="special-cooldown" class="special-cooldown"></div>
-        </div>
+
+    <!-- Explosion canvas -->
+    <canvas id="explode-stage"></canvas>
+
+    <!-- State A: idle bag -->
+    <div id="gacha-idle">
+      <div class="bag-wrap" onclick="startPull()">
+        <div class="bag-pulse"></div>
+        <svg class="bag-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <radialGradient id="bg1" cx="40%" cy="35%"><stop offset="0%" stop-color="#f0c84a"/><stop offset="100%" stop-color="#7a5010"/></radialGradient>
+            <radialGradient id="bg2" cx="40%" cy="30%"><stop offset="0%" stop-color="#ffe090"/><stop offset="100%" stop-color="#c9a227"/></radialGradient>
+            <filter id="shadow"><feDropShadow dx="0" dy="4" stdDeviation="6" flood-color="#000" flood-opacity="0.5"/></filter>
+          </defs>
+          <!-- Bag body -->
+          <ellipse cx="100" cy="130" rx="68" ry="58" fill="url(#bg1)" filter="url(#shadow)"/>
+          <!-- Bag top neck -->
+          <rect x="72" y="72" width="56" height="30" rx="10" fill="#b88820"/>
+          <!-- Tie / knot -->
+          <ellipse cx="100" cy="72" rx="22" ry="10" fill="url(#bg2)"/>
+          <ellipse cx="100" cy="68" rx="10" ry="7" fill="#f0d060"/>
+          <!-- Shine -->
+          <ellipse cx="80" cy="108" rx="18" ry="22" fill="rgba(255,255,255,0.12)" transform="rotate(-15 80 108)"/>
+          <!-- Uncyclopedia-style W -->
+          <text x="100" y="148" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="bold" fill="rgba(0,0,0,0.18)" letter-spacing="-2">W</text>
+          <text x="100" y="145" text-anchor="middle" font-family="Georgia,serif" font-size="52" font-weight="bold" fill="rgba(255,220,100,0.55)" letter-spacing="-2">W</text>
+        </svg>
       </div>
+      <p class="bag-hint">Tap the bag to pull 5 cards</p>
       <button class="cleanse-btn" onclick="cleanseCards()">🗑️ Cleanse Collection (Dev)</button>
     </div>
 
-  <!-- UR ANIMATION OVERLAY -->
-  <div id="ur-overlay" style="display:none;position:fixed;inset:0;z-index:200;pointer-events:none;overflow:hidden;">
-    <canvas id="ur-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
-  </div>
+    <!-- State C: card stack -->
+    <div id="gacha-stack">
+      <p class="stack-hint">Swipe left/right or use &lt; &gt;</p>
+      <div class="stack-scene" id="stack-scene"></div>
+      <div class="stack-nav">
+        <button class="stack-arrow" id="stack-prev" onclick="stackNav(-1)">&#8249;</button>
+        <span class="stack-counter" id="stack-counter">1 / 5</span>
+        <button class="stack-arrow" id="stack-next" onclick="stackNav(1)">&#8250;</button>
+      </div>
+      <div class="stack-actions">
+        <button class="pull-btn" onclick="resetToIdle()">← Back</button>
+        <button class="pull-btn" onclick="startPull()">Pull Again</button>
+      </div>
+    </div>
+
     <div id="pull-loading" class="loading" style="display:none">
       <span class="spinner"></span>Pulling from Uncyclopedia...
     </div>
     <div id="pull-error" class="error" style="display:none"></div>
-    <div id="pull-results" class="cards-reveal"></div>
+
+  </div>
+
+  <!-- UR ANIMATION OVERLAY -->
+  <div id="ur-overlay" style="display:none;position:fixed;inset:0;z-index:200;pointer-events:none;overflow:hidden;">
+    <canvas id="ur-canvas" style="position:absolute;inset:0;width:100%;height:100%;"></canvas>
   </div>
 
   <!-- COLLECTION -->
@@ -1033,97 +1168,241 @@ function makeCard(page, forcedRarity) {
   };
 }
 
-// ── SPECIAL PACK COOLDOWN ─────────────────────────────────────────────
-let specialAvailable = true;
-let specialTimer = null;
-const SPECIAL_COOLDOWN_MS = 5 * 60 * 1000; // 5 min cooldown
+// ── GACHA SCREEN STATE ────────────────────────────────────────────────
+let stackCards  = [];   // current pull of 5 cards
+let stackIndex  = 0;    // which card is on top
 
-function setSpecialCooldown() {
-  specialAvailable = false;
-  const btn = document.querySelector('.special-pull-btn');
-  const info = document.getElementById('special-cooldown');
-  if (btn) btn.disabled = true;
-  let remaining = SPECIAL_COOLDOWN_MS / 1000;
-  function tick() {
-    if (remaining <= 0) {
-      specialAvailable = true;
-      if (btn) btn.disabled = false;
-      if (info) info.textContent = 'Ready!';
-      setTimeout(() => { if (info) info.textContent = ''; }, 2000);
-      return;
-    }
-    const m = Math.floor(remaining / 60), s = remaining % 60;
-    if (info) info.textContent = `Next special in ${m}:${String(s).padStart(2,'0')}`;
-    remaining--;
-    specialTimer = setTimeout(tick, 1000);
+function showState(s) {
+  document.getElementById('gacha-idle').style.display    = s === 'idle'  ? 'flex'   : 'none';
+  document.getElementById('gacha-stack').style.display   = s === 'stack' ? 'flex'   : 'none';
+  document.getElementById('pull-loading').style.display  = s === 'load'  ? 'block'  : 'none';
+  if (s !== 'load') {
+    const e = document.getElementById('pull-error');
+    if (e) e.style.display = 'none';
   }
-  tick();
+}
+
+function resetToIdle() {
+  stackCards = [];
+  stackIndex = 0;
+  showState('idle');
+}
+
+// ── BAG EXPLOSION ─────────────────────────────────────────────────────
+function playExplosion(onDone) {
+  const canvas = document.getElementById('explode-stage');
+  canvas.width  = window.innerWidth;
+  canvas.height = window.innerHeight;
+  canvas.style.display = 'block';
+  const ctx = canvas.getContext('2d');
+
+  // Find bag position on screen to explode from
+  const bagEl = document.querySelector('.bag-wrap');
+  const bagR  = bagEl ? bagEl.getBoundingClientRect() : {left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0};
+  const cx = bagR.left + bagR.width  / 2;
+  const cy = bagR.top  + bagR.height / 2;
+
+  const particles = Array.from({length: 80}, () => {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 3 + Math.random() * 9;
+    const hue   = 38 + (Math.random() - 0.5) * 30;
+    const size  = 3 + Math.random() * 8;
+    return {
+      x: cx, y: cy,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - Math.random() * 4,
+      alpha: 1,
+      size,
+      hue,
+      sat: 70 + Math.random() * 30,
+      lit: 50 + Math.random() * 30,
+      rot: Math.random() * Math.PI * 2,
+      rotV: (Math.random() - 0.5) * 0.3,
+      shape: Math.random() > 0.5 ? 'rect' : 'circle',
+    };
+  });
+
+  // Big flash
+  let flash = 1.0;
+  let t = 0;
+
+  function frame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Flash
+    if (flash > 0) {
+      ctx.fillStyle = `rgba(255,230,120,${flash * 0.7})`;
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      flash -= 0.08;
+    }
+
+    let alive = 0;
+    for (const p of particles) {
+      p.x  += p.vx;
+      p.y  += p.vy;
+      p.vy += 0.18; // gravity
+      p.vx *= 0.98;
+      p.alpha -= 0.022;
+      p.rot += p.rotV;
+      if (p.alpha <= 0) continue;
+      alive++;
+      ctx.save();
+      ctx.globalAlpha = Math.max(0, p.alpha);
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = `hsl(${p.hue}, ${p.sat}%, ${p.lit}%)`;
+      if (p.shape === 'rect') {
+        ctx.fillRect(-p.size/2, -p.size/3, p.size, p.size * 0.6);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size/2, 0, Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+    }
+
+    t++;
+    if (alive > 0 || flash > 0) {
+      requestAnimationFrame(frame);
+    } else {
+      canvas.style.display = 'none';
+      if (onDone) onDone();
+    }
+  }
+  frame();
 }
 
 // ── PACK OPENING ───────────────────────────────────────────────────────
-async function openPack(type = 'normal') {
-  if (type === 'special' && !specialAvailable) return;
+async function startPull() {
+  showState('load');
 
-  const btn     = type === 'special' ? document.querySelector('.special-pull-btn') : document.getElementById('pull-btn');
-  const loading = document.getElementById('pull-loading');
-  const errEl   = document.getElementById('pull-error');
-  const results = document.getElementById('pull-results');
+  // Play explosion, then fetch
+  playExplosion(async () => {
+    try {
+      const randoms = await fetchRandom(5);
+      const pages   = await fetchDetails(randoms.map(r => r.title));
 
-  if (btn) btn.disabled = true;
-  loading.style.display = 'block';
-  errEl.style.display   = 'none';
-  results.innerHTML     = '';
+      const cards = randoms.map((r, i) => {
+        const page = pages.find(p => p.title === r.title) || { title: r.title, pageid: r.id };
+        let rarity = rollRarity();
+        if (i === 0 && rarity === 'C') rarity = 'R'; // soft pity
+        return makeCard(page, rarity);
+      });
 
-  try {
-    const randoms = await fetchRandom(5);
-    const pages   = await fetchDetails(randoms.map(r => r.title));
+      deck.push(...cards);
+      save();
 
-    const cards = randoms.map((r, i) => {
-      const page = pages.find(p => p.title === r.title) || { title: r.title, pageid: r.id };
-      let rarity = rollRarity();
+      // Check UR
+      const hasUR = cards.some(c => c.rarity === 'UR');
+      if (hasUR) playURAnimation();
 
-      if (type === 'special') {
-        // Special pack: slots 0+1 guaranteed SR or better
-        if (i < 2) {
-          while (['C','R'].includes(rarity)) rarity = rollRarity();
-        }
-        // At least one SSR+ across the whole pack
-        if (i === 4 && !cards.some(c => ['SSR','UR'].includes(c.rarity))) {
-          rarity = Math.random() < 0.15 ? 'UR' : 'SSR';
-        }
-      } else {
-        // Normal pack: soft pity — first card can't be C
-        if (i === 0 && rarity === 'C') rarity = 'R';
-      }
+      stackCards = cards;
+      stackIndex = 0;
 
-      return makeCard(page, rarity);
-    });
+      setTimeout(() => buildStack(), hasUR ? 2000 : 0);
 
-    loading.style.display = 'none';
+    } catch (err) {
+      showState('idle');
+      const errEl = document.getElementById('pull-error');
+      errEl.style.display = 'block';
+      errEl.innerHTML = '⚠️ ' + err.message + '<br><small style="color:var(--muted)">Check console for details.</small>';
+      console.error(err);
+    }
+  });
+}
 
-    // Check for UR before revealing
-    const hasUR = cards.some(c => c.rarity === 'UR');
-    if (hasUR) playURAnimation();
+// ── CARD STACK ─────────────────────────────────────────────────────────
+function buildStack() {
+  showState('stack');
+  const scene = document.getElementById('stack-scene');
+  scene.innerHTML = '';
 
-    cards.forEach((card, i) => {
-      setTimeout(() => {
-        results.insertAdjacentHTML('beforeend', cardHTML(card));
-      }, i * 150 + (hasUR ? 1800 : 0));
-    });
-
-    deck.push(...cards);
-    save();
-
-    if (type === 'special') setSpecialCooldown();
-
-  } catch (err) {
-    loading.style.display = 'none';
-    errEl.style.display   = 'block';
-    errEl.innerHTML = '⚠️ ' + err.message + '<br><small style="color:var(--muted)">Check browser console (F12) for full details.</small>';
-    console.error(err);
+  // Render cards back-to-front (index 4 = back, 0 = front)
+  for (let i = stackCards.length - 1; i >= 0; i--) {
+    const wrap = document.createElement('div');
+    wrap.className = 'stack-card-wrap';
+    wrap.dataset.idx = i;
+    wrap.innerHTML = cardHTML(stackCards[i]);
+    // Remove href so clicking card in stack doesn't navigate
+    const a = wrap.querySelector('a.card');
+    if (a) { a.removeAttribute('href'); a.style.cursor = 'default'; }
+    scene.appendChild(wrap);
+    attachDrag(wrap);
   }
 
-  if (btn && type !== 'special') btn.disabled = false;
+  updateStackPositions();
+  updateStackCounter();
+}
+
+function updateStackPositions() {
+  const wraps = document.querySelectorAll('#stack-scene .stack-card-wrap');
+  wraps.forEach(w => {
+    const i = parseInt(w.dataset.idx);
+    const rel = i - stackIndex; // relative position from top
+    w.className = 'stack-card-wrap';
+    if (rel < 0) {
+      w.classList.add('pos-hidden');
+    } else if (rel <= 4) {
+      w.classList.add(`pos-${rel}`);
+    } else {
+      w.classList.add('pos-hidden');
+    }
+  });
+}
+
+function updateStackCounter() {
+  document.getElementById('stack-counter').textContent = `${stackIndex + 1} / ${stackCards.length}`;
+  document.getElementById('stack-prev').disabled = stackIndex <= 0;
+  document.getElementById('stack-next').disabled = stackIndex >= stackCards.length - 1;
+}
+
+function stackNav(dir) {
+  const next = stackIndex + dir;
+  if (next < 0 || next >= stackCards.length) return;
+  stackIndex = next;
+  updateStackPositions();
+  updateStackCounter();
+}
+
+// ── DRAG TO SWIPE ──────────────────────────────────────────────────────
+function attachDrag(wrap) {
+  let startX = 0, startY = 0, dx = 0, dragging = false;
+
+  function onDown(e) {
+    // Only respond if this is the top card (pos-0)
+    if (!wrap.classList.contains('pos-0')) return;
+    dragging = true;
+    const pt = e.touches ? e.touches[0] : e;
+    startX = pt.clientX; startY = pt.clientY; dx = 0;
+    wrap.classList.add('dragging');
+    e.preventDefault();
+  }
+
+  function onMove(e) {
+    if (!dragging) return;
+    const pt = e.touches ? e.touches[0] : e;
+    dx = pt.clientX - startX;
+    const dy = pt.clientY - startY;
+    wrap.style.transform = `translate(${dx}px, ${dy * 0.3}px) rotate(${dx * 0.06}deg)`;
+    e.preventDefault();
+  }
+
+  function onUp() {
+    if (!dragging) return;
+    dragging = false;
+    wrap.classList.remove('dragging');
+    wrap.style.transform = '';
+    if (dx < -60) stackNav(1);
+    else if (dx > 60) stackNav(-1);
+    else updateStackPositions();
+  }
+
+  wrap.addEventListener('mousedown',  onDown, {passive: false});
+  wrap.addEventListener('touchstart', onDown, {passive: false});
+  window.addEventListener('mousemove',  onMove, {passive: false});
+  window.addEventListener('touchmove',  onMove, {passive: false});
+  window.addEventListener('mouseup',  onUp);
+  window.addEventListener('touchend', onUp);
 }
 
 function cardHTML(c) {
