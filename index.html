@@ -653,7 +653,9 @@ async function fetchRandom(n = 5) {
   const url = `${API}?action=query&list=random&rnnamespace=0&rnlimit=${n}&format=json&origin=*`;
   const r = await fetch(url);
   const d = await r.json();
-  return d.query.random; // [{id, ns, title}, ...]
+  console.log('[fetchRandom] status:', r.status, 'body:', JSON.stringify(d).slice(0, 300));
+  if (!d.query?.random) throw new Error('fetchRandom: unexpected response — ' + JSON.stringify(d).slice(0, 200));
+  return d.query.random;
 }
 
 async function fetchDetails(titles) {
@@ -661,6 +663,8 @@ async function fetchDetails(titles) {
   const url = `${API}?action=query&titles=${t}&prop=revisions|categories|links|pageimages|extracts&rvprop=size&cllimit=20&pllimit=30&pithumbsize=300&exintro=1&exchars=300&exsentences=3&explaintext=1&format=json&origin=*`;
   const r   = await fetch(url);
   const d   = await r.json();
+  console.log('[fetchDetails] status:', r.status, 'body:', JSON.stringify(d).slice(0, 300));
+  if (!d.query?.pages) throw new Error('fetchDetails: unexpected response — ' + JSON.stringify(d).slice(0, 200));
   return Object.values(d.query.pages);
 }
 
@@ -743,7 +747,7 @@ async function openPack() {
   } catch (err) {
     loading.style.display = 'none';
     errEl.style.display   = 'block';
-    errEl.textContent     = '⚠️ Could not reach Uncyclopedia: ' + err.message;
+    errEl.innerHTML = '⚠️ ' + err.message + '<br><small style="color:var(--muted)">Check browser console (F12) for full details.</small>';
     console.error(err);
   }
 
