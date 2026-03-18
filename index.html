@@ -23,19 +23,10 @@
     --green:    #3AC87B;
     --radius:   12px;
 
-    /* Card size tokens — change these to resize cards everywhere */
-    --card-w:        240px;   /* pull screen + stack */
-    --card-img-h:    148px;   /* image zone height */
-    --card-excerpt-h: 60px;   /* excerpt zone */
-    --card-flavour-h: 34px;   /* flavour zone */
-
-    --coll-card-w:        190px;  /* collection grid */
-    --coll-card-img-h:    116px;
-    --coll-card-excerpt-h: 48px;
-    --coll-card-flavour-h: 28px;
-
-    --modal-card-w:        310px; /* modal viewer */
-    --modal-card-img-h:    192px;
+    /* Card size tokens — 3:4 ratio enforced via aspect-ratio on .card */
+    --card-w:       240px;   /* pull screen + stack */
+    --coll-card-w:  180px;   /* collection grid */
+    --modal-card-w: 310px;   /* modal viewer */
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -476,11 +467,12 @@
     padding: 8px 0 16px;
   }
 
-  /* Outer frame */
+  /* Outer frame — always 3:4, card-inner fills the frame */
   .card {
     width: var(--card-w);
     min-width: var(--card-w);
     max-width: var(--card-w);
+    aspect-ratio: 3 / 4;
     flex-shrink: 0;
     border-radius: 12px;
     padding: 5px;
@@ -489,9 +481,9 @@
     animation: cardReveal 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
     text-decoration: none;
     display: block;
-    /* transform-style: preserve-3d; -- removed; metallicss handles sheen */
     transition: transform 0.12s ease, box-shadow 0.12s ease;
     overflow: hidden;
+    container-type: inline-size; /* enables cqi for .card-title */
   }
 
   @keyframes cardReveal {
@@ -552,7 +544,7 @@
     pointer-events: none;
   }
 
-  /* Inner card body */
+  /* Inner card body — flex column filling the whole frame */
   .card-inner {
     background: #111008;
     border-radius: 8px;
@@ -560,6 +552,7 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+    height: 100%;   /* fill the 3:4 frame */
   }
 
   /* Rarity + title bar */
@@ -587,7 +580,7 @@
   .rarity-UR  .rarity-badge { background: var(--gold); color: #1a1200; }
 
   .card-title {
-    font-size: 14px;
+    font-size: clamp(9px, 2.8cqi, 14px);
     font-weight: 700;
     color: #f0e8d0;
     line-height: 1.2;
@@ -595,19 +588,22 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
+  /* Fallback for browsers without cqi: use vw-relative shrink */
+  @supports not (font-size: 1cqi) {
+    .card-title { font-size: 13px; }
+  }
 
-  /* Image area — fixed height, image contained (never cropped) */
+  /* Image area — grows to fill available space between header and stats */
   .card-image {
     width: 100%;
-    height: var(--card-img-h);
+    flex: 1 1 0;      /* grow to fill, shrink if needed */
+    min-height: 0;    /* allow shrinking below content size */
     background: #161210;
     overflow: hidden;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 48px;
-    flex-shrink: 0;
-    flex-grow: 0;
   }
 
   .card-image img {
@@ -622,34 +618,21 @@
     max-height: 100%;
   }
 
-  /* Excerpt */
+  /* Excerpt — 3 lines, no fixed height */
   .card-excerpt {
-    padding: 7px 10px;
-    font-size: 11px;
-    line-height: 1.5;
+    padding: 6px 10px 7px;
+    font-size: 10px;
+    line-height: 1.45;
     color: #b0a890;
     background: rgba(20,16,8,0.95);
-    height: var(--card-excerpt-h);
+    flex-shrink: 0;
     overflow: hidden;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     -webkit-box-orient: vertical;
   }
 
-  /* Flavour text */
-  .card-flavour {
-    padding: 4px 8px 5px;
-    font-size: 9px;
-    font-style: italic;
-    color: #8a7840;
-    background: rgba(12,10,4,0.95);
-    border-top: 1px solid rgba(255,255,255,0.04);
-    height: var(--card-flavour-h);
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
+  /* .card-flavour removed */
 
   /* Stats bar — 3 columns now */
   .card-stats {
@@ -925,15 +908,12 @@
     justify-items: center;
   }
 
-  /* Collection cards — fixed width, scaled down from pull cards */
+  /* Collection cards — same 3:4 ratio, narrower width */
   .deck-grid .card {
     animation: none;
     width: var(--coll-card-w);
     min-width: var(--coll-card-w);
     max-width: var(--coll-card-w);
-    --card-img-h:     var(--coll-card-img-h);
-    --card-excerpt-h: var(--coll-card-excerpt-h);
-    --card-flavour-h: var(--coll-card-flavour-h);
   }
   /* Prevent the anchor inside a collection wrapper from navigating */
   .deck-grid div > a.card { pointer-events: none; }
@@ -1002,16 +982,8 @@
     --card-flavour-h: auto;
   }
 
-  /* Bigger text in modal */
-  .modal-box .card-image { height: var(--modal-card-img-h) !important; }
-  .modal-box .card-excerpt {
-    height: auto !important;
-    font-size: 11px;
-    -webkit-line-clamp: 6;
-  }
-  .modal-box .card-flavour {
-    height: auto !important;
-  }
+  /* Modal card — slightly larger text, more excerpt lines */
+  .modal-box .card-excerpt { font-size: 11px; -webkit-line-clamp: 6; }
   .modal-box .stat-val { font-size: 30px; }
   .modal-box .card-title { font-size: 15px; }
   .modal-box .stat-label { font-size: 10px; }
@@ -1658,21 +1630,12 @@ function cardHTML(c) {
   const fullText = c.extract || '';
   const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [];
   const excerpt  = sentences.slice(0, 3).join(' ').trim() || fullText.slice(0, 200);
-  const flavours = [
-    `A legendary ${c.title.toLowerCase()} defies all known logic.`,
-    `Those who have read about ${c.title} are never quite the same.`,
-    `${c.title} — feared by scholars, beloved by idiots.`,
-    `The very mention of ${c.title} causes historians to weep.`,
-    `No one truly understands ${c.title}. That's the point.`,
-  ];
-  const flavour = flavours[c.id % flavours.length];
 
-  // Count dupes in deck
   const dupeCount = deck.filter(d => d.title === c.title).length;
   const dupeBadge = dupeCount > 1
     ? `<div class="card-dupe-badge" style="display:block">×${dupeCount}</div>` : '';
 
-  const starEl = `<div class="card-star">⭐</div>`;
+  const starEl   = `<div class="card-star">⭐</div>`;
   const favClass = c.favorite ? ' favorited' : '';
   const mergeTag = c.merged ? `<span class="card-tag" style="color:#c080f8;border-color:#c080f8">+${c.mergeLevel||1}</span>` : '';
 
@@ -1686,8 +1649,7 @@ function cardHTML(c) {
           <span class="card-title">${c.title}</span>
         </div>
         ${imageHTML}
-        <div class="card-excerpt">${excerpt || 'No summary available for this article.'}</div>
-        <div class="card-flavour">${flavour}</div>
+        <div class="card-excerpt">${excerpt || 'No summary available.'}</div>
         <div class="card-stats">
           <div class="stat stat-atk">
             <span class="stat-label">ATK</span>
