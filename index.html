@@ -1938,8 +1938,156 @@ function cleanseCards() {
   if (!confirm('Wipe entire collection? This cannot be undone.')) return;
   deck = [];
   save();
-  document.getElementById('pull-results').innerHTML = '';
-  alert('Collection cleared.');
+  stackCards = [];
+  stackIndex = 0;
+  resetToIdle();
+}
+
+
+// ── BATTLE SETUP ───────────────────────────────────────────────────────
+function renderBattleSetup() {
+  const grid = document.getElementById('fighter-grid');
+  const btn  = document.getElementById('start-btn');
+
+  if (!deck.length) {
+    grid.innerHTML = '<p class="empty">Pull some cards first!</p>';
+    btn.disabled = true;
+    return;
+  }
+
+  grid.innerHTML = deck.map(c => `
+    <div class="fighter-slot ${selected?.id == c.id ? 'selected' : ''}" onclick="selectFighter(${c.id})">
+      <div class="fs-emoji">${c.emoji}</div>
+      <div class="fs-name">${c.title}</div>
+      <div class="fs-hp">${c.hp} HP</div>
+    </div>`).join('');
+
+  btn.disabled = !selected;
+}
+
+function selectFighter(id) {
+  selected = deck.find(c => c.id == id) || null;
+  renderBattleSetup();
+}
+
+// ── BATTLE ENGINE ──────────────────────────────────────────────────────
+async function startBattle() {
+  if (!selected) return;
+  const arena = document.getElementById('battle-arena');
+  document.getElementById('battle-setup').style.display = 'none';
+  arena.style.display = 'block';
+  arena.innerHTML = '<div class="loading"><span class="spinner"></span>Summoning opponent from the wiki...</div>';
+
+  let enemy;
+  try {
+    const [r] = await fetchRandom(1);
+    const [page] = await fetchDetails([r.title]);
+    enemy = makeCard(page || { title: r.title, pageid: r.id });
+  } catch {
+    const fallbacks = ['Oscar Wilde','Kitten Huffing','Uncyclopedia','Flying Spaghetti Monster','Chuck Norris'];
+    enemy = makeCard({ title: fallbacks[Math.floor(Math.random()*fallbacks.length)], pageid: 9999 });
+  }
+
+  battle = { player: { ...selected }, enemy, log: [], over: false };
+  renderArena();
+}
+
+function renderArena() {
+  const { player, enemy, log, over } = battle;
+  const pPct = Math.max(0, (player.hp / player.maxHp) * 100);
+  const ePct = Math.max(0, (enemy.hp  / (enemy.maxHp || enemy.hp)) * 100);
+  const barClass = p => p > 50 ? '' : p > 25 ? 'mid' : 'low';
+
+  document.getElementById('battle-arena').innerHTML = `
+    <div class="arena">
+      <div class="combatant">
+        <div class="cthumb">${player.emoji}</div>
+        <div class="cinfo">
+          <div class="cname">${player.title}</div>
+          <div class="ctype">${player.rarity} · ${player.type}</div>
+          <div class="hp-wrap">
+            <div class="hp-label"><span>HP</span><span>${player.hp} / ${player.maxHp}</span></div>
+            <div class="hp-bg"><div class="hp-fill ${barClass(pPct)}" style="width:${pPct}%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="vs-sep">— VS —</div>
+      <div class="combatant enemy">
+        <div class="cthumb">${enemy.emoji}</div>
+        <div class="cinfo">
+          <div class="cname">${enemy.title}</div>
+          <div class="ctype">${enemy.rarity} · ${enemy.type}</div>
+          <div class="hp-wrap">
+            <div class="hp-label"><span>HP</span><span>${enemy.hp} / ${enemy.maxHp}</span></div>
+            <div class="hp-bg"><div class="hp-fill ${barClass(ePct)}" style="width:${ePct}%"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="battle-log" id="blog">
+        ${log.map(e => `<div class="${e.c}">${e.m}</div>`).join('')}
+      </div>
+      <div class="battle-actions">
+        ${!over ? `
+          <button class="battle-btn" onclick="act('attack')">⚔️ Attack</button>
+          <button class="battle-btn" onclick="act('special')">✨ Special</button>
+          <button class="battle-btn" onclick="act('defend')">🛡️ Defend</button>
+          <button class="battle-btn danger" onclick="endBattle()">✕ Forfeit</button>
+        ` : `
+          <button class="battle-btn" onclick="endBattle()">🔄 New Battle</button>
+          <button class="battle-btn" onclick="switchTab('gacha', document.querySelectorAll('.tab')[0])">🎴 Pull More</button>
+        `}
+      </div>
+    </div>`;
+
+  const bl = document.getElementById('blog');
+  if (bl) bl.scrollTop = bl.scrollHeight;
+}
+
+function addLog(m, c = '') { battle.log.push({ m, c }); }
+
+function act(action) {
+  if (!battle || battle.over) return;
+  const { player, enemy } = battle;
+
+  if (action === 'attack') {
+    const base = Math.max(1, player.atk - enemy.def + Math.round((Math.random() - 0.3) * 12));
+    const crit = Math.random() < 0.15;
+    const dmg  = crit ? Math.round(base * 1.9) : base;
+    enemy.hp   = Math.max(0, enemy.hp - dmg);
+    addLog(
+      crit ? `💥 CRITICAL HIT! ${player.title} strikes for ${dmg}!`
+           : `⚔️ ${player.title} attacks for ${dmg} damage.`,
+      crit ? 'log-crit' : 'log-hit'
+    );
+  } else if (action === 'special') {
+    const dmg = Math.max(2, Math.round(player.atk * 1.8) - enemy.def);
+    enemy.hp  = Math.max(0, enemy.hp - dmg);
+    addLog(`✨ ${player.title} unleashes a special for ${dmg} damage!`, 'log-crit');
+  } else if (action === 'defend') {
+    const heal = Math.round(player.def * 0.6 + 6 + Math.random() * 5);
+    player.hp  = Math.min(player.maxHp, player.hp + heal);
+    addLog(`🛡️ ${player.title} braces and recovers ${heal} HP.`, 'log-heal');
+  }
+
+  if (enemy.hp > 0) {
+    const eDef = action === 'defend' ? Math.round(player.def * 0.4) : Math.round(player.def * 0.75);
+    const eDmg = Math.max(1, enemy.atk - eDef + Math.round((Math.random() - 0.3) * 10));
+    player.hp  = Math.max(0, player.hp - eDmg);
+    addLog(`🔴 ${enemy.title} retaliates for ${eDmg}.`);
+  }
+
+  if (enemy.hp <= 0)  { addLog(`🏆 Victory! ${enemy.title} defeated!`, 'log-end'); battle.over = true; }
+  else if (player.hp <= 0) { addLog(`💀 ${player.title} has fallen. Defeat.`, 'log-end'); battle.over = true; }
+
+  renderArena();
+}
+
+function endBattle() {
+  battle   = null;
+  selected = null;
+  document.getElementById('battle-arena').style.display = 'none';
+  document.getElementById('battle-setup').style.display = 'block';
+  renderBattleSetup();
 }
 
 // ── METALLICSS ────────────────────────────────────────────────────────
@@ -2066,3 +2214,9 @@ function playLRAnimation() {
   // Red burst: hue ~0-10 (crimson/red)
   playRarityAnimation(0, 15, 'hsla(5,100%,55%,A)');
 }
+
+
+</script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/metallicss/dist/metallicss.min.js" defer></script>
+</body>
+</html>
