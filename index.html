@@ -1362,7 +1362,6 @@ async function fetchDetails(titles) {
 // ── CARD GENERATION ────────────────────────────────────────────────────
 const RARITIES  = [{t:'LR',w:0.05},{t:'UR',w:0.3},{t:'SSR',w:1.5},{t:'SR',w:8},{t:'R',w:25},{t:'C',w:65}];
 const LR_CARDS  = ['Oscar Wilde','Uncyclopedia','Sophia','Fisher Price']; // the only LR cards
-const TYPES     = ['Meme','Stub','Satire','Parody','Nonsense','Propaganda','Vanity','Featured','Conspiracy','Absurdist'];
 const EMOJIS    = ['🐧','🤡','🎩','🌮','🦆','🎭','🏛️','📰','🚀','💀','🤖','🧀','👑','🎪','🦄','🐸','🦖','🍕','🌵','🔮','🦑','🛸','🧲','🏴‍☠️','🧸'];
 
 function rollRarity() {
@@ -1395,7 +1394,6 @@ function makeCard(page, forcedRarity) {
     id,
     title:   page?.title || 'Unknown Article',
     rarity,
-    type:    TYPES[id % TYPES.length],
     emoji:   EMOJIS[id % EMOJIS.length],
     thumb:   page?.thumbnail?.source || null,
     extract: page?.extract || '',
