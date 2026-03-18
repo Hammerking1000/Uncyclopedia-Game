@@ -489,9 +489,9 @@
     animation: cardReveal 0.5s cubic-bezier(0.34, 1.4, 0.64, 1) both;
     text-decoration: none;
     display: block;
-    transform-style: preserve-3d;
+    /* transform-style: preserve-3d; -- removed; metallicss handles sheen */
     transition: transform 0.12s ease, box-shadow 0.12s ease;
-    overflow: visible;
+    overflow: hidden;
   }
 
   @keyframes cardReveal {
@@ -499,34 +499,7 @@
     to   { opacity: 1; transform: perspective(600px) rotateY(0deg) scale(1); }
   }
 
-  /* Chrome metallic sheen — two layers: base shine + moving specular */
-  .card::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    border-radius: 12px;
-    pointer-events: none;
-    z-index: 3;
-    /* Sharp chrome bands that shift with mouse */
-    background:
-      radial-gradient(ellipse 80% 60% at var(--mx,50%) var(--my,50%),
-        rgba(255,255,255,0.45) 0%,
-        rgba(255,255,255,0.15) 25%,
-        transparent 55%),
-      linear-gradient(
-        calc(var(--angle, 135deg)),
-        transparent 20%,
-        rgba(255,255,255,0.08) 35%,
-        rgba(255,255,255,0.25) 45%,
-        rgba(255,255,255,0.08) 55%,
-        transparent 70%
-      );
-    opacity: 0;
-    transition: opacity 0.15s;
-    mix-blend-mode: screen;
-  }
-
-  .card:hover::after { opacity: 1; }
+  /* Chrome sheen handled by metallicss.js — no ::after needed */
 
   /* UR ribbon animation */
   @keyframes ribbon-sweep {
@@ -546,22 +519,27 @@
   .card.rarity-C {
     background: linear-gradient(135deg, #6a6a6a 0%, #3a3a3a 40%, #5a5a5a 60%, #2a2a2a 100%);
     box-shadow: 0 4px 18px rgba(0,0,0,0.55);
+    --metal: lead; --convexity: 3;
   }
   .card.rarity-R {
     background: linear-gradient(135deg, #e89050 0%, #8a4a18 40%, #d07030 60%, #6a3010 100%);
     box-shadow: 0 4px 22px rgba(200,122,58,0.45);
+    --metal: copper; --convexity: 3;
   }
   .card.rarity-SR {
     background: linear-gradient(135deg, #70b0f0 0%, #1a5aaa 40%, #50a0e0 60%, #103880 100%);
     box-shadow: 0 5px 26px rgba(58,123,200,0.55);
+    --metal: neutral; --convexity: 3;
   }
   .card.rarity-SSR {
     background: linear-gradient(135deg, #c080f8 0%, #6020b0 40%, #a060e8 60%, #401890 100%);
     box-shadow: 0 6px 30px rgba(123,58,200,0.6);
+    --metal: neutral; --convexity: 4;
   }
   .card.rarity-UR {
     background: linear-gradient(135deg, #ffe070 0%, #c89010 25%, #f8d040 50%, #a07008 75%, #f0c030 100%);
     box-shadow: 0 6px 36px rgba(201,162,39,0.65);
+    --metal: gold; --convexity: 5;
   }
   .card.rarity-UR::before {
     content: '★';
@@ -1207,14 +1185,14 @@
 <body>
 <div id="app">
   <header>
-    <h1>UncYclO</h1>
-    <p class="subtitle">Obtain cards from the depths of Uncyclopedia</p>
+    <h1>UnCycloGacha</h1>
+    <p class="subtitle">Pull cards from the depths of Uncyclopedia &mdash; the content-free encyclopedia</p>
   </header>
 
   <div class="tabs">
-    <button class="tab active" onclick="switchTab('gacha',this)">Pull</button>
-    <button class="tab" onclick="switchTab('deck',this)">Collection</button>
-    <button class="tab" onclick="switchTab('battle',this)">Battle</button>
+    <button class="tab active" onclick="switchTab('gacha',this)">🎴 Pull</button>
+    <button class="tab" onclick="switchTab('deck',this)">📦 Collection</button>
+    <button class="tab" onclick="switchTab('battle',this)">⚔️ Battle</button>
   </div>
 
   <!-- PULL -->
@@ -1226,8 +1204,8 @@
         <div class="bag-pulse"></div>
         <img src="potato.webp" class="bag-svg" alt="Uncyclopedia Potato" draggable="false">
       </div>
-      <p class="bag-hint">Tap the Untato to pull 5 cards</p>
-      <button class="cleanse-btn" onclick="cleanseCards()">Erase Collection (non-reversible!!! DevOPS)</button>
+      <p class="bag-hint">Tap the potato to pull 5 cards</p>
+      <button class="cleanse-btn" onclick="cleanseCards()">🗑️ Cleanse Collection (Dev)</button>
     </div>
 
     <!-- State B: shaking/splitting potato loading screen -->
@@ -1241,7 +1219,7 @@
 
     <!-- State C: card stack -->
     <div id="gacha-stack">
-      <p class="stack-hint">Drag or use arrows</p>
+      <p class="stack-hint">Drag or use arrows · seen cards fan left</p>
       <div class="stack-scene" id="stack-scene"></div>
       <div class="stack-nav">
         <button class="stack-arrow" id="stack-prev" onclick="stackNav(-1)">&#8249;</button>
@@ -1249,7 +1227,7 @@
         <button class="stack-arrow" id="stack-next" onclick="stackNav(1)">&#8250;</button>
       </div>
       <div class="stack-actions">
-        <button class="pull-btn" onclick="resetToIdle()">Back to Untato</button>
+        <button class="pull-btn" onclick="resetToIdle()">← Back to Potato</button>
       </div>
     </div>
 
@@ -1283,7 +1261,7 @@
       <!-- Rarity filter tabs -->
       <div class="rarity-tabs">
         <button class="rtab active" onclick="setRarity('ALL',this)">All</button>
-        <button class="rtab fav"    onclick="setRarity('FAV',this)">Faves</button>
+        <button class="rtab fav"    onclick="setRarity('FAV',this)">⭐ Faves</button>
         <button class="rtab ur"     onclick="setRarity('UR',this)">UR</button>
         <button class="rtab ssr"    onclick="setRarity('SSR',this)">SSR</button>
         <button class="rtab sr"     onclick="setRarity('SR',this)">SR</button>
@@ -1302,11 +1280,11 @@
       <button class="modal-close" onclick="closeModal()">✕</button>
       <div id="modal-card-wrap"></div>
       <div class="modal-actions">
-        <button class="modal-star-btn" id="modal-star-btn" onclick="toggleFavorite()">Favorite</button>
-        <button class="modal-merge-btn" id="modal-merge-btn" onclick="openMergePanel()">Merge</button>
+        <button class="modal-star-btn" id="modal-star-btn" onclick="toggleFavorite()">☆ Favorite</button>
+        <button class="modal-merge-btn" id="modal-merge-btn" onclick="openMergePanel()">⚗️ Merge</button>
       </div>
       <a id="modal-link" href="#" target="_blank" rel="noopener" class="modal-link-btn">
-        Uncyclopedia Page
+        Open on Uncyclopedia ↗
       </a>
     </div>
   </div>
@@ -1316,7 +1294,7 @@
     <div class="modal-box" style="max-width:480px;width:90%">
       <button class="modal-close" onclick="closeMergeModal()">✕</button>
       <div style="width:100%">
-        <p style="font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--gold);text-align:center;margin-bottom:4px">Merge Cards</p>
+        <p style="font-family:'Cinzel Decorative',serif;font-size:14px;color:var(--gold);text-align:center;margin-bottom:4px">⚗️ Merge Cards</p>
         <p style="font-size:12px;color:var(--muted);text-align:center;margin-bottom:16px">Sacrifice 2 other cards of the same rarity — your base card advances one tier (+10% stats)</p>
         <div id="merge-slots" style="display:flex;gap:16px;justify-content:center;flex-wrap:wrap;margin-bottom:16px"></div>
         <div id="merge-candidates" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;max-height:260px;overflow-y:auto;padding:4px"></div>
@@ -1329,13 +1307,13 @@
   <div id="screen-battle" class="screen">
     <div id="battle-setup">
       <div class="section-header" style="margin-bottom:12px">
-        <span class="section-title">Choose Fighter(s)</span>
+        <span class="section-title">Choose Your Fighter</span>
       </div>
       <div id="fighter-grid" class="fighter-grid">
         <p class="empty">Pull some cards first!</p>
       </div>
       <button class="pull-btn" id="start-btn" onclick="startBattle()" disabled style="display:block;margin:0 auto">
-        Start Battle
+        ⚔️ Start Battle
       </button>
     </div>
     <div id="battle-arena" style="display:none"></div>
@@ -1397,7 +1375,7 @@ function rollRarity() {
 
 function makeCard(page, forcedRarity) {
   const rarity = forcedRarity || rollRarity();
-  const mult   = {C:0.5, R:0.9, SR:1.1, SSR:1.4, UR:1.8}[rarity] || 1;
+  const mult   = {C:0.7, R:0.9, SR:1.1, SSR:1.4, UR:1.8}[rarity] || 1;
   const size   = page?.revisions?.[0]?.size   || 2000;
   const links  = (page?.links       || []).length;
   const cats   = (page?.categories  || []).length;
@@ -1445,7 +1423,7 @@ function resetToIdle() {
   showState('idle');
 }
 
-// ── UNTATO EXPLOSION ─────────────────────────────────────────────────────
+// ── BAG EXPLOSION ─────────────────────────────────────────────────────
 function playExplosion(onDone) {
   const canvas = document.getElementById('explode-stage');
   canvas.width  = window.innerWidth;
@@ -1453,7 +1431,7 @@ function playExplosion(onDone) {
   canvas.style.display = 'block';
   const ctx = canvas.getContext('2d');
 
-  // Find untato image position on screen to explode from its center
+  // Find potato image position on screen to explode from its center
   const potatoEl = document.querySelector('#bag-wrap img.bag-svg') || document.querySelector('.bag-wrap');
   const bagR  = potatoEl ? potatoEl.getBoundingClientRect() : {left: window.innerWidth/2, top: window.innerHeight/2, width:0, height:0};
   const cx = bagR.left + bagR.width  / 2;
@@ -1544,7 +1522,7 @@ async function startPull() {
     const cards = randoms.map((r, i) => {
       const page = pages.find(p => p.title === r.title) || { title: r.title, pageid: r.id };
       let rarity = rollRarity();
-      if (i === 0 && rarity === 'C') rarity = 'R';
+      if (i === 0 && rarity === 'C') rarity = 'R'; // soft pity
       return makeCard(page, rarity);
     });
 
@@ -1596,6 +1574,7 @@ function buildStack() {
 
   updateStackPositions();
   updateStackCounter();
+  applyMetallicss();
 }
 
 function updateStackPositions() {
@@ -1679,6 +1658,14 @@ function cardHTML(c) {
   const fullText = c.extract || '';
   const sentences = fullText.match(/[^.!?]+[.!?]+/g) || [];
   const excerpt  = sentences.slice(0, 3).join(' ').trim() || fullText.slice(0, 200);
+  const flavours = [
+    `A legendary ${c.title.toLowerCase()} defies all known logic.`,
+    `Those who have read about ${c.title} are never quite the same.`,
+    `${c.title} — feared by scholars, beloved by idiots.`,
+    `The very mention of ${c.title} causes historians to weep.`,
+    `No one truly understands ${c.title}. That's the point.`,
+  ];
+  const flavour = flavours[c.id % flavours.length];
 
   // Count dupes in deck
   const dupeCount = deck.filter(d => d.title === c.title).length;
@@ -1690,7 +1677,7 @@ function cardHTML(c) {
   const mergeTag = c.merged ? `<span class="card-tag" style="color:#c080f8;border-color:#c080f8">+${c.mergeLevel||1}</span>` : '';
 
   return `
-    <a class="card rarity-${c.rarity}${favClass}" href="${c.url}" target="_blank" rel="noopener" title="Open on Uncyclopedia" style="animation-delay:${Math.random()*0.2}s">
+    <a class="card metallicss rarity-${c.rarity}${favClass}" href="${c.url}" target="_blank" rel="noopener" title="Open on Uncyclopedia" style="animation-delay:${Math.random()*0.2}s">
       ${starEl}
       ${dupeBadge}
       <div class="card-inner">
@@ -1700,6 +1687,7 @@ function cardHTML(c) {
         </div>
         ${imageHTML}
         <div class="card-excerpt">${excerpt || 'No summary available for this article.'}</div>
+        <div class="card-flavour">${flavour}</div>
         <div class="card-stats">
           <div class="stat stat-atk">
             <span class="stat-label">ATK</span>
@@ -1775,6 +1763,7 @@ function renderDeck() {
     const html = cardHTML(c);
     return `<div onclick="openModal(${c.id});event.preventDefault();" style="cursor:pointer">${html}</div>`;
   }).join('');
+  applyMetallicss();
 }
 
 // ── CARD VIEWER MODAL ──────────────────────────────────────────────────
@@ -1806,6 +1795,7 @@ function openModal(id) {
 
   document.getElementById('card-modal').style.display = 'flex';
   document.body.style.overflow = 'hidden';
+  applyMetallicss();
 }
 
 function closeModal(e) {
@@ -1834,7 +1824,7 @@ function toggleFavorite() {
 
 // ── MERGE SYSTEM ──────────────────────────────────────────────────────
 const RARITY_ORDER = ['C','R','SR','SSR','UR'];
-let mergeTargetIds = [];
+let mergeTargetIds = []; // the 2 cards we're sacrificing
 
 function openMergePanel() {
   const base = deck.find(d => d.id == modalCardId);
@@ -1956,11 +1946,26 @@ function confirmMerge() {
 
 // ── DEV: CLEANSE ──────────────────────────────────────────────────────
 function cleanseCards() {
-  if (!confirm('Wipes entire collection')) return;
+  if (!confirm('Wipe entire collection? This cannot be undone.')) return;
   deck = [];
   save();
   document.getElementById('pull-results').innerHTML = '';
   alert('Collection cleared.');
+}
+
+// ── METALLICSS ────────────────────────────────────────────────────────
+let _metalModule = null;
+async function applyMetallicss() {
+  // Lazy-load the module once
+  if (!_metalModule) {
+    try {
+      _metalModule = await import('https://cdn.jsdelivr.net/npm/metallicss/dist/metallicss.min.js');
+    } catch(e) {
+      return; // CDN unavailable — graceful degradation
+    }
+  }
+  if (!_metalModule?.metallicss) return;
+  document.querySelectorAll('.metallicss').forEach(el => _metalModule.metallicss(el));
 }
 
 // ── UR RIBBON ANIMATION ────────────────────────────────────────────────
@@ -2034,19 +2039,7 @@ function playURAnimation() {
   draw();
 }
 
-// ── METALLIC SHEEN — mouse tracking ───────────────────────────────────
-document.addEventListener('mousemove', e => {
-  const card = e.target.closest('.card');
-  if (!card) return;
-  const r   = card.getBoundingClientRect();
-  const mx  = ((e.clientX - r.left) / r.width  * 100).toFixed(1);
-  const my  = ((e.clientY - r.top)  / r.height * 100).toFixed(1);
-  // Angle: map mouse X across card to a rotation range for the chrome band
-  const angle = 90 + ((e.clientX - r.left) / r.width - 0.5) * 60;
-  card.style.setProperty('--mx', mx + '%');
-  card.style.setProperty('--my', my + '%');
-  card.style.setProperty('--angle', angle + 'deg');
-});
+// Metallic sheen handled by metallicss.js
 
 // Close modal on Escape
 document.addEventListener('keydown', e => {
@@ -2220,5 +2213,6 @@ function endBattle() {
   renderBattleSetup();
 }
 </script>
+<script type="module" src="https://cdn.jsdelivr.net/npm/metallicss/dist/metallicss.min.js" defer></script>
 </body>
 </html>
