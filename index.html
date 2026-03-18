@@ -269,8 +269,8 @@
     display: none;
     flex-direction: column;
     align-items: center;
-    gap: 24px;
-    padding: 20px 0 32px;
+    gap: 12px;
+    padding: 20px 0 24px;
   }
 
   .stack-hint {
@@ -278,6 +278,14 @@
     color: var(--muted);
     letter-spacing: 0.5px;
     text-align: center;
+  }
+
+  /* Outer wrapper — positions arrows to either side of the scene */
+  .stack-scene-row {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   /* The card stack area — sized to fit --card-w cards with fan room on both sides */
@@ -309,24 +317,20 @@
     z-index: 20;
   }
 
-  /* Nav arrows */
-  .stack-nav {
-    display: flex;
-    align-items: center;
-    gap: 60px;
-  }
-
+  /* Arrows — tall pills flanking the stack */
   .stack-arrow {
-    width: 44px; height: 44px;
-    border-radius: 50%;
+    width: 40px;
+    height: 120px;
+    border-radius: 20px;
     border: 1.5px solid rgba(255,255,255,0.15);
     background: rgba(255,255,255,0.04);
     color: var(--text);
-    font-size: 20px;
+    font-size: 28px;
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
     transition: all 0.12s;
     user-select: none;
+    flex-shrink: 0;
   }
 
   .stack-arrow:hover { background: rgba(255,255,255,0.1); border-color: var(--gold); color: var(--gold); }
@@ -337,7 +341,6 @@
     font-weight: 700;
     color: var(--muted);
     letter-spacing: 1px;
-    min-width: 48px;
     text-align: center;
   }
 
@@ -636,13 +639,9 @@
   .card-image img {
     width: 100%;
     height: 100%;
-    object-fit: contain;   /* never crops — blank space instead */
-    object-position: center center;
+    object-fit: cover;     /* fills frame, crops if needed — no letterbox */
+    object-position: center top;
     display: block;
-    min-width: 0;
-    min-height: 0;
-    max-width: 100%;
-    max-height: 100%;
   }
 
   /* Excerpt — 3 lines, no fixed height */
@@ -1219,16 +1218,14 @@
 
     <!-- State C: card stack -->
     <div id="gacha-stack">
-      <p class="stack-hint">Drag or use arrows · seen cards fan left</p>
-      <div class="stack-scene" id="stack-scene"></div>
-      <div class="stack-nav">
+      <p class="stack-hint">Drag or use arrows</p>
+      <div class="stack-scene-row">
         <button class="stack-arrow" id="stack-prev" onclick="stackNav(-1)">&#8249;</button>
-        <span class="stack-counter" id="stack-counter">1 / 5</span>
+        <div class="stack-scene" id="stack-scene"></div>
         <button class="stack-arrow" id="stack-next" onclick="stackNav(1)">&#8250;</button>
       </div>
-      <div class="stack-actions">
-        <button class="pull-btn" onclick="resetToIdle()">← Back to Potato</button>
-      </div>
+      <span class="stack-counter" id="stack-counter">1 / 5</span>
+      <button class="pull-btn" onclick="resetToIdle()" style="padding:10px 28px;font-size:14px">← Back to Untato</button>
     </div>
 
     <div id="pull-error" class="error" style="display:none"></div>
